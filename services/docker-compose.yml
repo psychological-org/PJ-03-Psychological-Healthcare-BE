@@ -19,6 +19,139 @@ services:
     depends_on:
       - config-server
 
+  appointment-service:
+    build:
+      context: ./appointment
+    container_name: appointment-service
+    ports:
+      - "8080:8080"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  attendance-service:
+    build:
+      context: ./attendance
+    container_name: attendance-service
+    ports:
+      - "8070:8070"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  collection-service:
+    build:
+      context: ./collection
+    container_name: collection-service
+    ports:
+      - "8020:8020"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  comment-service:
+    build:
+      context: ./comment
+    container_name: comment-service
+    ports:
+      - "8060:8060"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  community-service:
+    build:
+      context: ./community
+    container_name: community-service
+    ports:
+      - "8040:8040"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  follow-service:
+    build:
+      context: ./follow
+    container_name: follow-service
+    ports:
+      - "8090:8090"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  gateway-service:
+    build:
+      context: ./gateway
+    container_name: gateway-service
+    ports:
+      - "8222:8222"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  message-service:
+    build:
+      context: ./message
+    container_name: message-service
+    ports:
+      - "8110:8110"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  notification-service:
+    build:
+      context: ./notification
+    container_name: notification-service
+    ports:
+      - "8000:8000"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  post-service:
+    build:
+      context: ./post
+    container_name: post-service
+    ports:
+      - "8050:8050"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  topic-service:
+    build:
+      context: ./topic
+    container_name: topic-service
+    ports:
+      - "8010:8010"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  user-service:
+    build:
+      context: ./user
+    container_name: user-service
+    ports:
+      - "8030:8030"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+
 networks:
   pj-03-psychological-healthcare-be_microservices-net:
     external: true
