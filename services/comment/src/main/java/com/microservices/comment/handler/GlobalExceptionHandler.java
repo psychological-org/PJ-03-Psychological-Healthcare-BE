@@ -2,6 +2,8 @@ package com.microservices.comment.handler;
 
 import java.util.HashMap;
 
+import com.microservices.comment.exception.PostNotFoundException;
+import com.microservices.comment.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -17,6 +19,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CommentNotFoundException.class)
     public ResponseEntity<String> handle(CommentNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<String> handle(PostNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handle(UserNotFoundException exp) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(exp.getMsg());

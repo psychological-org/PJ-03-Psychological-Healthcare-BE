@@ -2,15 +2,9 @@ package com.microservices.collection.collection;
 
 import java.util.List;
 
+import com.microservices.collection.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +29,11 @@ public class CollectionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CollectionResponse>> findAll() {
-        return ResponseEntity.ok(this.service.findAllCollections());
+    public ResponseEntity<PagedResponse<CollectionResponse>> findAll(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(this.service.findAllCollections(page, limit));
     }
 
     @GetMapping("/exists/{collection-id}")
@@ -57,4 +54,12 @@ public class CollectionController {
         this.service.deleteCollection(userId);
         return ResponseEntity.accepted().build();
     }
+
+    @GetMapping("/topic/{topic-id}")
+    public ResponseEntity<List<CollectionResponse>> findByTopicId(
+            @PathVariable("topic-id") Integer topicId
+    ) {
+        return ResponseEntity.ok(this.service.findCollectionsByTopicId(topicId));
+    }
 }
+

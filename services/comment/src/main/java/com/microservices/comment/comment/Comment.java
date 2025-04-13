@@ -1,13 +1,15 @@
 package com.microservices.comment.comment;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,16 +17,24 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@Table(name = "comment")
 public class Comment {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer reactCount;
     private String content;
     private String imageUrl;
 
-    private Integer userId;
+    private String userId;
     private Integer postId;
+
+    private Integer reactCount;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
 }

@@ -4,5 +4,6 @@ public record CommunityResponse(
         Integer id,
         String name,
         String content,
-        String avatarUrl) {
+        String avatarUrl,
+        String adminId) {
 }

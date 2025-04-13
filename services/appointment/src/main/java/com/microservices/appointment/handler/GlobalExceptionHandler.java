@@ -2,6 +2,7 @@ package com.microservices.appointment.handler;
 
 import java.util.HashMap;
 
+import com.microservices.appointment.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -17,6 +18,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppointmentNotFoundException.class)
     public ResponseEntity<String> handle(AppointmentNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handle(UserNotFoundException exp) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(exp.getMsg());

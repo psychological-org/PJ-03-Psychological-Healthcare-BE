@@ -2,6 +2,8 @@ package com.microservices.community.handler;
 
 import java.util.HashMap;
 
+import com.microservices.community.exception.ParticipantCommunityNotFoundException;
+import com.microservices.community.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -21,6 +23,21 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(exp.getMsg());
     }
+
+    @ExceptionHandler(ParticipantCommunityNotFoundException.class)
+    public ResponseEntity<String> handle(ParticipantCommunityNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handle(UserNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handle(MethodArgumentNotValidException exp) {

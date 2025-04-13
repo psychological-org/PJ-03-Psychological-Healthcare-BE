@@ -4,8 +4,8 @@ public record CommentResponse(
                 Integer id,
                 String content,
                 String imageUrl,
-                Integer reactCount,
-                Integer userId,
-                Integer postId) {
+                String userId,
+                Integer postId,
+                Integer reactCount) {
 
 }

@@ -6,8 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-COPY src ./src
-
+COPY . .
 RUN mvn clean package -DskipTests
 
 # Stage 2: Use JDK 17 runtime image to run the app
@@ -15,7 +14,7 @@ FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-COPY --from=builder /app/target/appointment-*.jar app.jar
+COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8070
 
