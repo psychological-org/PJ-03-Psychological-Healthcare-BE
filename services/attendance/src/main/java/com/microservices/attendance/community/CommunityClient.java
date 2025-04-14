@@ -6,9 +6,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "topic-service", url = "${application.config.topic-url}")
+@FeignClient(name = "community-service", url = "${application.config.community-url}")
 public interface CommunityClient {
 
-    @GetMapping("/{topic-id}")
-    Optional<CommunityResponse> findCommunityById(@PathVariable("topic-id") String topicId);
+    @GetMapping("/{community-id}")
+    Optional<CommunityResponse> findCommunityById(@PathVariable("community-id") String topicId);
 }
