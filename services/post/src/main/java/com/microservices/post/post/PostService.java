@@ -7,6 +7,7 @@ import com.microservices.post.community.CommunityClient;
 import com.microservices.post.community.CommunityResponse;
 import com.microservices.post.exception.CommunityNotFoundException;
 import com.microservices.post.exception.UserNotFoundException;
+import com.microservices.post.kafka.PostProducer;
 import com.microservices.post.user.UserClient;
 import com.microservices.post.user.UserResponse;
 import com.microservices.post.utils.PagedResponse;
@@ -30,31 +31,46 @@ public class PostService {
     private final PostMapper mapper;
     private final UserClient userClient;
     private final CommunityClient communityClient;
+    private final PostProducer postProducer;
 
     public Integer createPost(PostRequest request) {
         try {
-            var userResponse = userClient.findById(request.userId());
-            var communityResponse = communityClient.findById(request.communityId());
-
-            if (userResponse == null || userResponse.getBody() == null)
+            // Tìm và kiểm tra User
+            UserResponse user;
+            try {
+                var response = userClient.findById(request.userId());
+                if (response == null || response.getBody() == null) {
+                    throw new UserNotFoundException("User not found with ID: " + request.userId());
+                }
+                user = response.getBody();
+            } catch (FeignException.NotFound e) {
                 throw new UserNotFoundException("User not found with ID: " + request.userId());
+            }
 
-            if (communityResponse == null || communityResponse.getBody() == null)
+            // Tìm và kiểm tra Community
+            CommunityResponse community;
+            try {
+                var response = communityClient.findById(request.communityId());
+                if (response == null || response.getBody() == null) {
+                    throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
+                }
+                community = response.getBody();
+            } catch (FeignException.NotFound e) {
                 throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
+            }
 
             var post = this.repository.save(mapper.toPost(request));
+            postProducer.sendNotificationOfNewPost(mapper.fromPost(post));
+
             return post.getId();
 
-        } catch (FeignException.NotFound e) {
-            if (e.request().url().contains("communities"))
-                throw new CommunityNotFoundException("Community not found: " + request.communityId());
-            if (e.request().url().contains("users"))
-                throw new UserNotFoundException("User not found: " + request.userId());
-            throw e; // Nếu không xác định, ném lại
+        } catch (UserNotFoundException | CommunityNotFoundException e) {
+            throw e; // Re-throw nếu là lỗi người dùng hoặc cộng đồng không tìm thấy
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while creating the post: " + e.getMessage());
+            throw new RuntimeException("An error occurred while creating the post: " + e.getMessage(), e);
         }
     }
+
 
     public void updatePost(PostRequest request) {
         var post = this.repository.findById(request.id())

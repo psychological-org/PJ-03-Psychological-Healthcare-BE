@@ -39,26 +39,34 @@ public class CollectionSeenService {
 
     public Integer createCollectionSeen(CollectionSeenRequest request) {
         try {
-            ResponseEntity<UserResponse> response = userClient.findById(request.userId());
-            if (response == null || response.getBody() == null) {
-                throw new UserNotFoundException(
-                        String.format("Cannot create community_seen:: No user found with ID: %s", request.userId()));
+            // Kiểm tra User tồn tại
+            UserResponse user;
+            try {
+                ResponseEntity<UserResponse> response = userClient.findById(request.userId());
+                if (response == null || response.getBody() == null) {
+                    throw new UserNotFoundException("User not found with ID: " + request.userId());
+                }
+                user = response.getBody();
+            } catch (FeignException.NotFound e) {
+                throw new UserNotFoundException("User not found with ID: " + request.userId());
             }
 
+            // Kiểm tra Collection tồn tại
             var collectionResponse = collectionService.findById(request.collectionId());
-            if (collectionResponse == null ) {
-                throw new UserNotFoundException(
-                        String.format("Cannot create community_seen:: No collection found with ID: %s", request.collectionId()));
+            if (collectionResponse == null) {
+                throw new CollectionNotFoundException("Collection not found with ID: " + request.collectionId());
             }
 
             var collectionSeen = this.collectionSeenMapper.toCollectionSeen(request);
             return collectionSeenRepository.save(collectionSeen).getId();
-        } catch (FeignException.NotFound e) {
-            throw new UserNotFoundException("User or post service not available or returned error: " + e.getMessage());
+
+        } catch (UserNotFoundException | CollectionNotFoundException e) {
+            throw e; // ném lại lỗi cụ thể
         } catch (Exception e) {
-            throw new RuntimeException("Unexpected error when creating community", e);
+            throw new RuntimeException("Unexpected error when creating community_seen: " + e.getMessage(), e);
         }
     }
+
 
     public void updateCollectionSeen(CollectionSeenRequest request) {
         CollectionSeen collectionSeen = this.collectionSeenRepository.findOneById(request.id())

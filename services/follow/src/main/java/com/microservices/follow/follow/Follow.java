@@ -1,13 +1,16 @@
 package com.microservices.follow.follow;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,14 +18,23 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@Table(name = "follow")
 public class Follow {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column()
+    @Pattern(regexp = "accepted|decline|block|pending", message = "The transaction status is invalid")
     private String status;
 
-    private Integer senderId;
-    private Integer receiverId;
+    private String senderId;
+    private String receiverId;
 
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 }

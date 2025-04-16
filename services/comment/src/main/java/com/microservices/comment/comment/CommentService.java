@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.microservices.comment.exception.PostNotFoundException;
 import com.microservices.comment.exception.UserNotFoundException;
+import com.microservices.comment.kafka.CommentProducer;
 import com.microservices.comment.post.PostClient;
 import com.microservices.comment.post.PostResponse;
 import com.microservices.comment.user.UserClient;
@@ -30,6 +31,7 @@ public class CommentService {
     private final CommentMapper mapper;
     private final UserClient userClient;
     private final PostClient postClient;
+    private final CommentProducer commentProducer;
 
     public Integer createComment(CommentRequest request) {
         try {
@@ -47,6 +49,8 @@ public class CommentService {
             }
 
             var comment = this.repository.save(mapper.toComment(request));
+            // Send follow event to Kafka
+            commentProducer.sendNotificationOfNewCommentToPost(mapper.fromComment(comment));
             return comment.getId();
         } catch (FeignException e) {
             throw new UserNotFoundException("User or post service not available or returned error: " + e.getMessage());

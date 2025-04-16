@@ -1,6 +1,6 @@
 package com.microservices.notification.kafka.attendance;
 
-public record AttendanceConfirmation(
+public record AttendanceNotification(
         Integer notificationId,
         Integer senderId,
         Integer receiverId) { 

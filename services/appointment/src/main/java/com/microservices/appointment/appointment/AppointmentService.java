@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.microservices.appointment.exception.UserNotFoundException;
+import com.microservices.appointment.kafka.AppointmentProducer;
 import com.microservices.appointment.user.UserClient;
 import com.microservices.appointment.user.UserResponse;
 import com.microservices.appointment.utils.PagedResponse;
@@ -27,6 +28,7 @@ public class AppointmentService {
     private final AppointmentRepository repository;
     private final AppointmentMapper mapper;
     private final UserClient userClient;
+    private final AppointmentProducer appointmentProducer;
 
     public Integer createAppointment(AppointmentRequest request) {
         try {
@@ -41,6 +43,8 @@ public class AppointmentService {
             UserResponse patientResponse = patientOptional.get();
 
             var appointment = this.repository.save(mapper.toAppointment(request));
+            appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment));
+
             return appointment.getId();
 
         } catch (FeignException e) {
@@ -57,6 +61,7 @@ public class AppointmentService {
                         String.format("Cannot update appointment:: No appointment found with the provided ID: %s",
                                 request.id())));
         mergeAppointment(appointment, request);
+        appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment));
         this.repository.save(appointment);
     }
 
