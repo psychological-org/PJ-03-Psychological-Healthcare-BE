@@ -2,15 +2,9 @@ package com.microservices.appointment.appointment;
 
 import java.util.List;
 
+import com.microservices.appointment.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +29,11 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AppointmentResponse>> findAll() {
-        return ResponseEntity.ok(this.service.findAllAppointments());
+    public ResponseEntity<PagedResponse<AppointmentResponse>> findAll(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam (value = "limit", defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(this.service.findAllAppointments(page, limit));
     }
 
     @GetMapping("/exists/{appointment-id}")

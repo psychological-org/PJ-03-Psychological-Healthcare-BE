@@ -2,9 +2,14 @@ package com.microservices.notification.email;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.microservices.notification.exception.UserNotFoundException;
+import com.microservices.notification.kafka.appointment.AppointmentNotification;
+import com.microservices.notification.user.UserClient;
+import com.microservices.notification.user.UserResponse;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -24,38 +29,64 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
+    private final UserClient userClient;
 
     @Async
-    public void sentPaymentSuccessEmail(
-            String destinationEmail,
-            String customerName,
-            BigDecimal amount,
-            String orderReference) throws MessagingException {
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_RELATED,
-                StandardCharsets.UTF_8.name());
+    public void sendSuccessfulAppointmentConfirmation(AppointmentNotification notification) {
 
-        messageHelper.setFrom("contact@gmail.com");
-        final String templateName = EmailTemplates.PAYMENT_CONFIRMATION.getTemplate();
-
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("customerName", customerName);
-        variables.put("amount", amount);
-        variables.put("orderReference", orderReference);
-
-        Context context = new Context();
-        context.setVariables(variables);
-        messageHelper.setSubject(EmailTemplates.PAYMENT_CONFIRMATION.getSubject());
-
-        try {
-            String htmlTemplate = templateEngine.process(templateName, context);
-            messageHelper.setText(htmlTemplate, true);
-            messageHelper.setTo(destinationEmail);
-            mailSender.send(mimeMessage);
-            log.info(String.format("INFO - Email successfully sent to %s with template %s", destinationEmail));
-        } catch (MessagingException e) {
-            log.warn("WARNING - Cannot send email to {}", destinationEmail);
+        UserResponse patient = userClient.findById(notification.patientId()).getBody();
+        if (patient == null) {
+            throw new UserNotFoundException("Patient not found with ID: " + notification.patientId());
         }
 
+        UserResponse doctor = userClient.findById(notification.doctorId()).getBody();
+        if (doctor == null) {
+            throw new UserNotFoundException("Doctor not found with ID: " + notification.doctorId());
+        }
+
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_NO, StandardCharsets.UTF_8.name());
+
+            messageHelper.setFrom("anyen@gmail.com");
+            messageHelper.setTo(patient.email());
+            messageHelper.setSubject("Xác nhận đặt lịch khám thành công");
+
+            String formattedDate = notification.appointmentDate()
+                    .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String formattedTime = notification.appointmentTime()
+                    .format(DateTimeFormatter.ofPattern("HH:mm"));
+
+            String textContent = String.format("""
+        Chào bạn,
+
+        Bạn đã đặt lịch khám bệnh trầm cảm thành công với thông tin sau:
+
+        🩺 Bác sĩ: Dr. %s
+        📅 Ngày khám: %s
+        🕒 Giờ khám: %s
+        🔖 Mã lịch hẹn: #%d
+        📌 Trạng thái: %s
+
+        Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email này.
+
+        Chúc bạn luôn mạnh khỏe và an yên.
+
+        Trân trọng,
+        An Yên.
+    """,
+                    doctor.fullName(),
+                    formattedDate,
+                    formattedTime,
+                    notification.id(),
+                    notification.status());
+
+            messageHelper.setText(textContent, false);
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            log.error("Error creating MimeMessage: {}", e.getMessage());
+            return;
+        }
     }
+
 }
