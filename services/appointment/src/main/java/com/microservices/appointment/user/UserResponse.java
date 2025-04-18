@@ -3,7 +3,13 @@ package com.microservices.appointment.user;
 public record UserResponse(
         String id,
         String fullName,
+        String biography,
+        String yearOfBirth,
+        String yearOfExperience,
+        String avatarUrl,
+        String email,
         String phone,
-        String email) {
+        String password,
+        String content) {
 
 }
