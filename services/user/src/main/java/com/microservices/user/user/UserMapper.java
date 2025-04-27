@@ -2,42 +2,52 @@ package com.microservices.user.user;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserMapper {
 
-    public User toUser(UserRequest request) {
-        if (request == null) {
-            return null;
-        }
+    public User toUser(UserRequest req) {
+        if (req == null) return null;
         return User.builder()
-                .id(request.id())
-                .fullName(request.fullName())
-                .biography(request.biography())
-                .yearOfBirth(request.yearOfBirth())
-                .yearOfExperience(request.yearOfExperience())
-                .avatarUrl(request.avatarUrl())
-                .email(request.email())
-                .phone(request.phone())
-                .password(request.password())
-                .content(request.content())
+                .id(req.id())
+                .biography(req.biography())
+                .yearOfBirth(req.yearOfBirth())
+                .yearOfExperience(req.yearOfExperience())
+                .avatarUrl(req.avatarUrl())
+                .backgroundUrl(req.backgroundUrl())
+                .phone(req.phone())
+                .content(req.content())
                 .build();
     }
 
-    public UserResponse fromUser(User user) {
-        if (user == null) {
-            return null;
+    public UserResponse fillProfile(UserResponse resp, User profile) {
+        if (profile == null) {
+            return resp;
         }
         return new UserResponse(
-                user.getId(),
-                user.getFullName(),
-                user.getBiography(),
-                user.getYearOfBirth(),
-                user.getYearOfExperience(),
-                user.getAvatarUrl(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getPassword(),
-                user.getContent()
+                resp.id(),
+                resp.username(),
+                resp.email(),
+                resp.fullName(),
+                resp.roles(),
+                profile.getBiography(),
+                profile.getYearOfBirth(),
+                profile.getYearOfExperience(),
+                profile.getAvatarUrl(),
+                profile.getBackgroundUrl(),
+                profile.getPhone(),
+                profile.getContent()
+        );
+    }
+
+    public UserResponse coreToResponse(
+            String id, String username, String email, String fullName,
+            List<String> roles
+    ) {
+        return new UserResponse(
+                id, username, email, fullName, roles,
+                null, null, null, null, null, null, null
         );
     }
 

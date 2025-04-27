@@ -86,11 +86,18 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgresql:5432/user
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: Admin@123
     volumes:
       - keycloak-h2-data:/opt/keycloak/data
     networks:
       - pj-03-psychological-healthcare-be_microservices-net
     restart: unless-stopped
+    depends_on:
+      - postgresql
     command:
       - "start-dev"
       - --hostname-strict=false
