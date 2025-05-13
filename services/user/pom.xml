@@ -32,6 +32,11 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>io.mongock</groupId>
+            <artifactId>mongock-springboot</artifactId>
+            <version>5.4.1</version> <!-- hoặc bản mới nhất -->
+        </dependency>
+        <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-admin-client</artifactId>
             <version>24.0.2</version>

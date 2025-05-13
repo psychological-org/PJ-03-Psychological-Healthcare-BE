@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record UserRequest(
                 String id,
+                String keycloakId,
                 String biography,
                 String yearOfBirth,
                 String yearOfExperience,

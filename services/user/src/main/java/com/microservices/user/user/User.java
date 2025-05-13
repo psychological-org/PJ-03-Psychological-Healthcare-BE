@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @Setter
-@EnableMongoAuditing
 @Document(collection = "user")
 public class User {
 
@@ -32,6 +31,7 @@ public class User {
     private String backgroundUrl;
     private String phone;
     private String content;
+    private String keycloakId;
     @CreatedDate
     private LocalDateTime createdAt;
 

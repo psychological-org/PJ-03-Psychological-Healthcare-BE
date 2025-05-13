@@ -18,6 +18,7 @@ public class UserMapper {
                 .backgroundUrl(req.backgroundUrl())
                 .phone(req.phone())
                 .content(req.content())
+                .keycloakId(req.keycloakId())
                 .build();
     }
 
