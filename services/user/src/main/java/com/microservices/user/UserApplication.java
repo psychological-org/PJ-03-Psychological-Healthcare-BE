@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableMongoAuditing
+//@EnableMongoAuditing
 public class UserApplication {
 
 	public static void main(String[] args) {

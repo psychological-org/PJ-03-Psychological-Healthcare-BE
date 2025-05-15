@@ -3,6 +3,7 @@ package com.microservices.user.user;
 import java.util.List;
 
 import com.microservices.user.utils.PagedResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,17 +31,21 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<PagedResponse<UserResponse>> findAll(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "limit", defaultValue = "10") int limit
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(this.service.findAllUsers(page, limit));
+        Page<UserResponse> p = service.findAllUsers(page, size);
+        return ResponseEntity.ok(
+                new PagedResponse<>(p.getContent(), p.getTotalPages(), p.getTotalElements())
+        );
     }
 
-    @GetMapping("/exists/{user-id}")
-    public ResponseEntity<Boolean> existsById(
-            @PathVariable("user-id") String userId) {
-        return ResponseEntity.ok(this.service.existsById(userId));
-    }
+
+//    @GetMapping("/exists/{user-id}")
+//    public ResponseEntity<Boolean> existsById(
+//            @PathVariable("user-id") String userId) {
+//        return ResponseEntity.ok(this.service.existsById(userId));
+//    }
 
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponse> findById(
