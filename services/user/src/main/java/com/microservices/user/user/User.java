@@ -19,22 +19,19 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @Setter
-@EnableMongoAuditing
 @Document(collection = "user")
 public class User {
 
     @Id
     private String id;
-    private String fullName;
     private String biography;
     private String yearOfBirth;
     private String yearOfExperience;
     private String avatarUrl;
     private String backgroundUrl;
-    private String email;
     private String phone;
-    private String password;
     private String content;
+    private String keycloakId;
     @CreatedDate
     private LocalDateTime createdAt;
 

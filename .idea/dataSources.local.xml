@@ -10,15 +10,18 @@
       <user-name>root</user-name>
       <schema-mapping>
         <introspection-scope>
-          <node kind="database">
-            <name qname="appointment" />
-            <name qname="collection" />
-            <name qname="comment" />
-            <name qname="community" />
-            <name qname="post" />
-            <name qname="topic" />
-            <name qname="follow" />
-            <node kind="schema" qname="public" />
+          <node negative="1">
+            <node kind="database">
+              <name qname="appointment" />
+              <name qname="collection" />
+              <name qname="comment" />
+              <name qname="community" />
+              <name qname="follow" />
+              <name qname="post" />
+              <name qname="topic" />
+              <node kind="schema" qname="public" />
+            </node>
+            <node kind="database" qname="user" />
           </node>
         </introspection-scope>
       </schema-mapping>

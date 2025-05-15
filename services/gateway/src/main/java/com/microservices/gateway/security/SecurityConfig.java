@@ -94,7 +94,6 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // Tắt CSRF nếu không cần thiết
                 .authorizeExchange(exchange -> exchange
                                 .pathMatchers("/eureka/**").permitAll()
-                                .pathMatchers("/api/v1/users/**").hasRole("admin")
                                 .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
