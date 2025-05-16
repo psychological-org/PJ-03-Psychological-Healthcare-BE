@@ -2,8 +2,9 @@ package com.microservices.user.db.changelog;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.cloudyrock.mongock.ChangeLog;
-import com.github.cloudyrock.mongock.ChangeSet;
+import io.mongock.api.annotations.ChangeUnit;
+import io.mongock.api.annotations.Execution;
+
 import com.microservices.user.seeder.KeycloakUserSeeder;
 import com.microservices.user.user.User;
 import com.microservices.user.user.UserRepository;
@@ -17,17 +18,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@ChangeLog(order = "001")
+@ChangeUnit(id = "001", order = "001", author = "loantuyet")
 @RequiredArgsConstructor
 public class UserMetadataChangeLog {
 
     private final UserRepository userRepository;
 
-    @ChangeSet(order = "001", id = "seedUserMetadata", author = "loantuyet")
+    @Execution
     public void seedMetadata(MongoTemplate mongoTemplate) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         InputStream is = new ClassPathResource("seed/users.json").getInputStream();
-        List<Map<String, Object>> users = mapper.readValue(is, new TypeReference<>() {});
+        List<Map<String, Object>> users = mapper.readValue(is, new TypeReference<>() {
+        });
         Map<String, String> idMap = KeycloakUserSeeder.getUserIdMap();
 
         for (Map<String, Object> user : users) {
@@ -35,7 +37,8 @@ public class UserMetadataChangeLog {
             String keycloakId = idMap.get(username);
             String hardcodedMongoId = (String) user.get("id");
 
-            if (keycloakId == null || hardcodedMongoId == null) continue;
+            if (keycloakId == null || hardcodedMongoId == null)
+                continue;
 
             if (userRepository.findById(hardcodedMongoId).isPresent()) {
                 System.out.println("⚠️ Skipping: Metadata for user " + username + " already exists.");
@@ -43,7 +46,8 @@ public class UserMetadataChangeLog {
             }
 
             Map<String, Object> metadata = (Map<String, Object>) user.get("metadata");
-            if (metadata == null) continue;
+            if (metadata == null)
+                continue;
 
             User entity = User.builder()
                     .id(hardcodedMongoId)
