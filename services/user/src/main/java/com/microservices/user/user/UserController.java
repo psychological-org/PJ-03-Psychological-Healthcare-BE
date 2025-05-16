@@ -5,8 +5,6 @@ import java.util.List;
 import com.microservices.user.utils.PagedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -42,17 +40,17 @@ public class UserController {
         );
     }
 
+
+//    @GetMapping("/exists/{user-id}")
+//    public ResponseEntity<Boolean> existsById(
+//            @PathVariable("user-id") String userId) {
+//        return ResponseEntity.ok(this.service.existsById(userId));
+//    }
+
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponse> findById(
             @PathVariable("user-id") String userId) {
-        User user = this.service.findRawByKeycloakId(userId);
-        return ResponseEntity.ok(this.service.findById(user.getKeycloakId()));
-    }
-
-    @GetMapping("profile")
-    public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal Jwt jwt) {
-        String keycloakId = jwt.getClaim("sub");
-        return ResponseEntity.ok(this.service.findById(keycloakId));
+        return ResponseEntity.ok(this.service.findById(userId));
     }
 
     @DeleteMapping("/{user-id}")
