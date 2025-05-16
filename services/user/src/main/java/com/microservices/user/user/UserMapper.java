@@ -2,13 +2,12 @@ package com.microservices.user.user;
 
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class UserMapper {
 
     public User toUser(UserRequest req) {
-        if (req == null) return null;
+        if (req == null)
+            return null;
         return User.builder()
                 .id(req.id())
                 .biography(req.biography())
@@ -31,25 +30,22 @@ public class UserMapper {
                 resp.username(),
                 resp.email(),
                 resp.fullName(),
-                resp.roles(),
+                resp.role(),
                 profile.getBiography(),
                 profile.getYearOfBirth(),
                 profile.getYearOfExperience(),
                 profile.getAvatarUrl(),
                 profile.getBackgroundUrl(),
                 profile.getPhone(),
-                profile.getContent()
-        );
+                profile.getContent());
     }
 
     public UserResponse coreToResponse(
             String id, String username, String email, String fullName,
-            List<String> roles
-    ) {
+            String role) {
         return new UserResponse(
-                id, username, email, fullName, roles,
-                null, null, null, null, null, null, null
-        );
+                id, username, email, fullName, role,
+                null, null, null, null, null, null, null);
     }
 
 }
