@@ -26,7 +26,7 @@ public record UserResponse(
         String username,          // từ claim preferred_username
         String email,             // từ claim email
         String fullName,          // từ claim name
-        String role,       // realm_access.roles
+        List<String> roles,       // realm_access.roles
         // extended profile
         String biography,
         String yearOfBirth,

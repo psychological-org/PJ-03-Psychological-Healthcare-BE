@@ -31,7 +31,7 @@ public class UserMapper {
                 resp.username(),
                 resp.email(),
                 resp.fullName(),
-                resp.role(),
+                resp.roles(),
                 profile.getBiography(),
                 profile.getYearOfBirth(),
                 profile.getYearOfExperience(),
@@ -44,10 +44,10 @@ public class UserMapper {
 
     public UserResponse coreToResponse(
             String id, String username, String email, String fullName,
-            String role
+            List<String> roles
     ) {
         return new UserResponse(
-                id, username, email, fullName, role,
+                id, username, email, fullName, roles,
                 null, null, null, null, null, null, null
         );
     }
