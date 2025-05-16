@@ -25,28 +25,29 @@ public class CollectionSeenService {
     private final CollectionSeenMapper collectionSeenMapper;
     private final UserClient userClient;
 
-//    try {
-//        var topicResponse = topicClient.findTopicById(request.topicId());
-//        if (topicResponse == null || topicResponse.getBody() == null) {
-//            throw new CollectionNotFoundException(
-//                    String.format("Cannot create collection:: No topic found with ID: %s", request.topicId()));
-//        }
-//    } catch (FeignException.FeignClientException e) {
-//        throw new CollectionNotFoundException("Topic service not available or returned error: " + e.getMessage());
-//    }
-//    var collection = this.repository.save(mapper.toCollection(request));
-//        return collection.getId();
+    // try {
+    // var topicResponse = topicClient.findTopicById(request.topicId());
+    // if (topicResponse == null || topicResponse.getBody() == null) {
+    // throw new CollectionNotFoundException(
+    // String.format("Cannot create collection:: No topic found with ID: %s",
+    // request.topicId()));
+    // }
+    // } catch (FeignException.FeignClientException e) {
+    // throw new CollectionNotFoundException("Topic service not available or
+    // returned error: " + e.getMessage());
+    // }
+    // var collection = this.repository.save(mapper.toCollection(request));
+    // return collection.getId();
 
     public Integer createCollectionSeen(CollectionSeenRequest request) {
         try {
             // Kiểm tra User tồn tại
-            UserResponse user;
             try {
                 ResponseEntity<UserResponse> response = userClient.findById(request.userId());
                 if (response == null || response.getBody() == null) {
                     throw new UserNotFoundException("User not found with ID: " + request.userId());
                 }
-                user = response.getBody();
+                // Không cần gán vào biến user nếu không sử dụng tiếp
             } catch (FeignException.NotFound e) {
                 throw new UserNotFoundException("User not found with ID: " + request.userId());
             }
@@ -67,11 +68,11 @@ public class CollectionSeenService {
         }
     }
 
-
     public void updateCollectionSeen(CollectionSeenRequest request) {
         CollectionSeen collectionSeen = this.collectionSeenRepository.findOneById(request.id())
                 .orElseThrow(() -> new UserNotFoundException(
-                        String.format("Cannot update collection_seen:: No collection_seen found with the provided ID: %s",
+                        String.format(
+                                "Cannot update collection_seen:: No collection_seen found with the provided ID: %s",
                                 request.id())));
         mergeCollectionSeen(collectionSeen, request);
         this.collectionSeenRepository.save(collectionSeen);
@@ -83,7 +84,8 @@ public class CollectionSeenService {
                 ResponseEntity<UserResponse> response = userClient.findById(request.userId());
                 if (response == null || response.getBody() == null) {
                     throw new UserNotFoundException(
-                            String.format("Cannot update collection_seen:: No user found with ID: %s", request.userId()));
+                            String.format("Cannot update collection_seen:: No user found with ID: %s",
+                                    request.userId()));
                 }
             } catch (FeignException.FeignClientException e) {
                 throw new UserNotFoundException("User service not available or returned error: " + e.getMessage());
@@ -91,7 +93,7 @@ public class CollectionSeenService {
             collectionSeen.setUserId(request.userId());
         }
         if (request.collectionId() != null) {
-            var collectionResponse = collectionService.findById(request.collectionId());
+            // var collectionResponse = collectionService.findById(request.collectionId());
             collectionSeen.setCollectionId(request.collectionId());
         }
     }
@@ -103,7 +105,7 @@ public class CollectionSeenService {
                         String.format("No collection_seen found with the provided ID: %s", id)));
     }
 
-     public boolean existsById(Integer id) {
+    public boolean existsById(Integer id) {
         CollectionSeenResponse collection = this.findById(id);
         return collection != null;
     }
@@ -118,7 +120,7 @@ public class CollectionSeenService {
         this.collectionSeenRepository.softDeleteById(id);
     }
 
-    public PagedResponse <CollectionSeenResponse> findAllCollectionSeen(int page, int limit) {
+    public PagedResponse<CollectionSeenResponse> findAllCollectionSeen(int page, int limit) {
         Pageable pageable = PageRequest.of(page, limit);
         Page<CollectionSeen> appointments = this.collectionSeenRepository.findAll(pageable);
         if (appointments.getContent().isEmpty()) {

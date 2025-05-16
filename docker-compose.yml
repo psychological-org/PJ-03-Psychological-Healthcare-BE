@@ -100,8 +100,8 @@ services:
       - postgresql
     command:
       - "start-dev"
-#      - --hostname-strict=false
-#      - --hostname-url=http://keycloak:8080
+      - --hostname-strict=false
+      - --hostname-url=http://localhost:9098
 
 networks:
   pj-03-psychological-healthcare-be_microservices-net:

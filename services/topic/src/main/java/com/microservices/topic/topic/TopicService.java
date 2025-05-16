@@ -20,7 +20,7 @@ public class TopicService {
 
     private final TopicRepository repository;
     private final TopicMapper mapper;
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TopicService.class);
+    // private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TopicService.class);
 
     public Integer createTopic(TopicRequest request) {
         var topic = this.repository.save(mapper.toTopic(request));

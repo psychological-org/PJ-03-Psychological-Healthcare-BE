@@ -1,14 +1,11 @@
 package com.microservices.collection.collection_seen;
 
-import com.microservices.collection.collection.CollectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CollectionSeenMapper {
-    private final CollectionService collectionService;
-
 
     public CollectionSeen toCollectionSeen(CollectionSeenRequest request) {
         if (request == null) {

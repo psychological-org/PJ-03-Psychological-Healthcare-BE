@@ -1,5 +1,6 @@
 package com.microservices.notification.user_notification;
 
+import com.microservices.notification.exception.NotificationNotFoundException;
 import com.microservices.notification.exception.UserNotFoundException;
 import com.microservices.notification.exception.UserNotificationNotFoundException;
 import com.microservices.notification.notification.NotificationResponse;
@@ -21,9 +22,14 @@ public class UserNotificationService {
         UserResponse user = userClient.findById(userNotificationRequest.userId()).getBody();
         if (user == null) {
             throw new UserNotFoundException(
-                    String.format("Cannot create community:: No user found with ID: %s", user.id()));
+                    String.format("Cannot create community:: No user found with ID: %s",
+                            userNotificationRequest.userId()));
         }
         NotificationResponse notification = notificationService.findOneById(userNotificationRequest.notificationId());
+        if (notification == null) {
+            throw new NotificationNotFoundException(
+                    String.format("Notification not found with ID: %s", userNotificationRequest.notificationId()));
+        }
         UserNotification userNotification = userNotificationMapper.toUserNotification(userNotificationRequest);
         UserNotification savedUserNotification = userNotificationRepository.save(userNotification);
         return userNotificationMapper.fromUserNotification(savedUserNotification).id();
@@ -39,7 +45,8 @@ public class UserNotificationService {
     }
 
     public UserNotificationResponse findByUserIdAndNotificationId(String userId, String notificationId) {
-        UserNotification userNotification = userNotificationRepository.findByUserIdAndNotificationId(userId, notificationId);
+        UserNotification userNotification = userNotificationRepository.findByUserIdAndNotificationId(userId,
+                notificationId);
         if (userNotification == null) {
             throw new UserNotificationNotFoundException(
                     String.format("User has never received a notification from the system."));

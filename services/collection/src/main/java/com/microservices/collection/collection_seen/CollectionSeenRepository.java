@@ -1,6 +1,5 @@
 package com.microservices.collection.collection_seen;
 
-import com.microservices.collection.utils.PagedResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
