@@ -1,7 +1,5 @@
 package com.microservices.user.user;
 
-import java.util.List;
-
 import com.microservices.user.utils.PagedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
