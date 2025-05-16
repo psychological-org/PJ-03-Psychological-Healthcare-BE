@@ -1,6 +1,5 @@
 package com.microservices.notification.notification;
 
-import brave.Request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

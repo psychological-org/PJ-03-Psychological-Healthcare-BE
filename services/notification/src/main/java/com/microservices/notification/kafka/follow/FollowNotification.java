@@ -1,7 +1,5 @@
 package com.microservices.notification.kafka.follow;
 
-import java.time.LocalDateTime;
-
 public record FollowNotification(
         Integer id,
         String status,

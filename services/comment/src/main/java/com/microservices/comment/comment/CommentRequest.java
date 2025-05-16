@@ -1,7 +1,5 @@
 package com.microservices.comment.comment;
 
-import jakarta.validation.constraints.NotNull;
-
 public record CommentRequest(
         Integer id,
         String content,
