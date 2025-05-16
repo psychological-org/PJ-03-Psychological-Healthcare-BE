@@ -1,4 +1,5 @@
 package com.microservices.notification.kafka;
+
 import com.microservices.notification.email.EmailService;
 import com.microservices.notification.follow.FollowClient;
 import com.microservices.notification.follow.FollowResponse;
@@ -10,7 +11,6 @@ import com.microservices.notification.notification.NotificationRequest;
 import com.microservices.notification.notification.NotificationResponse;
 import com.microservices.notification.notification.NotificationService;
 import com.microservices.notification.notification.NotificationType;
-import com.microservices.notification.post.PostClient;
 import com.microservices.notification.user.UserClient;
 import com.microservices.notification.user.UserResponse;
 import com.microservices.notification.user_notification.UserNotificationRequest;
@@ -38,28 +38,38 @@ public class NotificationConsumer {
 
         @Autowired
         private final UserClient userClient;
-        private final PostClient postClient;
+        // private final PostClient postClient;
 
         @KafkaListener(topics = "comment-topic", groupId = "commentGroup")
         public void commentPostNotification(CommentNotification commentNotification) throws MessagingException {
                 log.info("Consuming the message from comment-topic Topic:: {}", commentNotification);
-                UserResponse commentUser = userClient.findById(commentNotification.userId()).getBody();
+                UserResponse commentUser = null;
                 try {
-                        NotificationRequest newNotification = new NotificationRequest(null, " đã bình luận về bài viết của bạn", NotificationType.COMMENT_NOTIFICATION);
+                        commentUser = userClient.findById(commentNotification.userId()).getBody();
+                        if (commentUser == null) {
+                                log.error("User not found for comment with ID: {}", commentNotification.userId());
+                                return; // hoặc ném exception tùy cách xử lý
+                        }
+
+                        NotificationRequest newNotification = new NotificationRequest(null,
+                                        " đã bình luận về bài viết của bạn", NotificationType.COMMENT_NOTIFICATION);
                         String notificationResponse = notificationService.createNotification(newNotification);
 
-                        String userNotificationContent = "Người dùng " + commentUser.fullName() + newNotification.content();
-                        UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null, commentNotification.userId(), newNotification.id(), userNotificationContent, false);
-                        String userNotification = userNotificationService.createUserNotification(userNotificationRequest);
+                        String userNotificationContent = "Người dùng " + commentUser.fullName()
+                                        + newNotification.content();
+                        UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
+                                        commentNotification.userId(), newNotification.id(), userNotificationContent,
+                                        false);
+                        userNotificationService.createUserNotification(userNotificationRequest);
 
                         NotificationResponse notification = notificationService.findOneById(notificationResponse);
                         log.info("Save comment notification: {}", notification);
+
                         // send push notification to client
                         messagingTemplate.convertAndSendToUser(
-                                commentNotification.userId(),
-                                "/notification/comment",
-                                notification
-                        );
+                                        commentNotification.userId(),
+                                        "/notification/comment",
+                                        notification);
 
                 } catch (RuntimeException e) {
                         log.error("Error sending notification when someone comments: {}", e.getMessage());
@@ -69,25 +79,37 @@ public class NotificationConsumer {
         @KafkaListener(topics = "follow-topic", groupId = "followGroup")
         public void consumerFollowNotification(FollowNotification followNotification) throws MessagingException {
                 log.info("Consuming the message from follow-topic Topic:: {}", followNotification);
-                UserResponse followUser = userClient.findById(followNotification.senderId()).getBody();
+                UserResponse followUser = null;
                 try {
-                        NotificationRequest newNotification = new NotificationRequest(null, " đã theo dõi bạn trên nền tảng", NotificationType.FOLLOW_NOTIFICATION);
+                        followUser = userClient.findById(followNotification.senderId()).getBody();
+                        if (followUser == null) {
+                                log.error("User not found for follow sender ID: {}", followNotification.senderId());
+                                return;
+                        }
+
+                        NotificationRequest newNotification = new NotificationRequest(null,
+                                        " đã theo dõi bạn trên nền tảng", NotificationType.FOLLOW_NOTIFICATION);
                         String notificationResponse = notificationService.createNotification(newNotification);
 
-                        String userNotificationContent = "Người dùng " + followUser.fullName() + newNotification.content();
-                        UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null, followNotification.receiverId(), newNotification.id(), userNotificationContent, false);
-                        String userNotification = userNotificationService.createUserNotification(userNotificationRequest);
+                        String userNotificationContent = "Người dùng " + followUser.fullName()
+                                        + newNotification.content();
+                        UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
+                                        followNotification.receiverId(), newNotification.id(), userNotificationContent,
+                                        false);
+                        userNotificationService.createUserNotification(userNotificationRequest);
 
                         NotificationResponse notification = notificationService.findOneById(notificationResponse);
                         log.info("Save follow notification: {}", notification);
+
                         // send push notification to client
                         messagingTemplate.convertAndSendToUser(
-                                followNotification.receiverId(),
-                                "/notification/follow",
-                                notification
-                        );
+                                        followNotification.receiverId(),
+                                        "/notification/follow",
+                                        notification);
 
-                        messagingTemplate.convertAndSendToUser(followNotification.receiverId(), "/notification/follow", notificationResponse);
+                        messagingTemplate.convertAndSendToUser(followNotification.receiverId(), "/notification/follow",
+                                        notificationResponse);
+
                 } catch (RuntimeException e) {
                         log.error("Error sending notification when someone follows: {}", e.getMessage());
                 }
@@ -97,11 +119,14 @@ public class NotificationConsumer {
         public void consumerAppointmentNotification(AppointmentNotification notification) throws MessagingException {
                 log.info("Consuming the message from appointment-topic Topic:: {}", notification.toString());
                 try {
-                        NotificationRequest request = new NotificationRequest(null, "Thông báo xác nhận đặt lịch", NotificationType.APPOINTMENT_NOTIFICATION);
+                        NotificationRequest request = new NotificationRequest(null, "Thông báo xác nhận đặt lịch",
+                                        NotificationType.APPOINTMENT_NOTIFICATION);
                         String notificationResponse = notificationService.createNotification(request);
 
-                        UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null, notification.patientId(), notificationResponse, "Thông báo xác nhận đặt lịch", false);
-                        String userNotification = userNotificationService.createUserNotification(userNotificationRequest);
+                        UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
+                                        notification.patientId(), notificationResponse, "Thông báo xác nhận đặt lịch",
+                                        false);
+                        userNotificationService.createUserNotification(userNotificationRequest);
 
                         emailService.sendSuccessfulAppointmentConfirmation(notification);
                 } catch (RuntimeException e) {
@@ -113,19 +138,22 @@ public class NotificationConsumer {
         public void consumerCreateNewPostNotification(PostNotification post) throws MessagingException {
                 log.info("Consuming the message from post-topic Topic:: {}", post);
                 UserResponse poster = userClient.findById(post.userId()).getBody();
+                if (poster == null) {
+                        log.error("User not found for poster ID: {}", post.userId());
+                        return;
+                }
                 String userResponseContent = "Người dùng " + poster.fullName() + " đã đăng tải bài viết mới";
                 try {
                         NotificationRequest newNotification = new NotificationRequest(
-                                null,
-                                "Người dùng đăng tải bài viết mới",
-                                NotificationType.POST_NOTIFICATION
-                        );
+                                        null,
+                                        "Người dùng đăng tải bài viết mới",
+                                        NotificationType.POST_NOTIFICATION);
                         String notificationId = notificationService.createNotification(newNotification);
                         NotificationResponse notification = notificationService.findOneById(notificationId);
 
                         List<FollowResponse> followResponse = followClient
-                                .findAllFriendByUserIdNotPaginate(post.userId())
-                                .getBody();
+                                        .findAllFriendByUserIdNotPaginate(post.userId())
+                                        .getBody();
 
                         log.info("Save follower: {}", followResponse);
 
@@ -136,29 +164,26 @@ public class NotificationConsumer {
 
                         for (FollowResponse follow : followResponse) {
                                 String targetUserId = follow.senderId().equals(post.userId())
-                                        ? follow.receiverId()
-                                        : follow.senderId();
+                                                ? follow.receiverId()
+                                                : follow.senderId();
 
                                 UserNotificationRequest userNotificationRequest = new UserNotificationRequest(
-                                        null,
-                                        targetUserId,
-                                        notificationId,
-                                        userResponseContent,
-                                        false
-                                );
+                                                null,
+                                                targetUserId,
+                                                notificationId,
+                                                userResponseContent,
+                                                false);
 
                                 userNotificationService.createUserNotification(userNotificationRequest);
 
                                 messagingTemplate.convertAndSendToUser(
-                                        targetUserId,
-                                        "/notification/post",
-                                        notification
-                                );
+                                                targetUserId,
+                                                "/notification/post",
+                                                notification);
                         }
                 } catch (Exception e) {
                         log.error("Error processing post notification: {}", e.getMessage());
                 }
         }
-
 
 }
