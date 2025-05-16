@@ -1,15 +1,10 @@
 package com.microservices.user.user;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,93 +34,21 @@ public class UserService {
         return keycloak.realm(realm);
     }
 
-
     public String createUser(UserRequest request) {
-        if (request.password() == null || request.password().isBlank()) {
-            throw new IllegalArgumentException("Password must not be null or empty");
-        }
-
-        if (!List.of("admin", "doctor", "patient").contains(request.role())) {
-            throw new IllegalArgumentException("Invalid role: " + request.role());
-        }
-
-        UserRepresentation userRep = new UserRepresentation();
-        userRep.setUsername(request.username());
-        userRep.setEmail(request.email());
-        userRep.setFirstName(request.firstName());
-        userRep.setLastName(request.lastName());
-        userRep.setEnabled(true);
-        userRep.setEmailVerified(true);
-
-        String keycloakId;
-        try (Response response = realmResource().users().create(userRep)) {
-            if (response.getStatus() != 201) {
-                throw new RuntimeException("Failed to create user in Keycloak: " + response.getStatusInfo());
-            }
-            keycloakId = response.getHeaderString("Location")
-                    .substring(response.getHeaderString("Location").lastIndexOf('/') + 1);
-        }
-
-        CredentialRepresentation passwordCred = new CredentialRepresentation();
-        passwordCred.setTemporary(false);
-        passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue(request.password());
-
-        try {
-            realmResource().users().get(keycloakId).resetPassword(passwordCred);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to set password for user", e);
-        }
-
-        RoleRepresentation roleRep = realmResource().roles().get(request.role()).toRepresentation();
-        realmResource().users().get(keycloakId).roles().realmLevel().add(List.of(roleRep));
-
-        User user = mapper.toUser(request);
-        user.setKeycloakId(keycloakId);
-        repo.save(user);
-
+        var user = this.repo.save(mapper.toUser(request));
         return user.getId();
     }
 
-
     public void updateUser(UserRequest request) {
-        // 1. Kiểm tra user MongoDB có tồn tại không
-        User user = this.repo.findById(request.id())
+        var user = this.repo.findById(request.id())
                 .orElseThrow(() -> new UserNotFoundException(
-                        String.format("Cannot update User: No User found with the provided ID: %s", request.id())));
-
+                        String.format("Cannot update User:: No User found with the provided ID: %s", request.id())));
         mergeUser(user, request);
         this.repo.save(user);
-
-        if (StringUtils.isNotBlank(request.firstName()) || StringUtils.isNotBlank(request.lastName()) ||
-                StringUtils.isNotBlank(request.email()) || StringUtils.isNotBlank(request.username())) {
-
-            try {
-                var keycloakUserResource = realmResource().users().get(user.getKeycloakId());
-                var userRep = keycloakUserResource.toRepresentation();
-
-                if (StringUtils.isNotBlank(request.firstName())) {
-                    userRep.setFirstName(request.firstName());
-                }
-                if (StringUtils.isNotBlank(request.lastName())) {
-                    userRep.setLastName(request.lastName());
-                }
-                if (StringUtils.isNotBlank(request.email())) {
-                    userRep.setEmail(request.email());
-                }
-                if (StringUtils.isNotBlank(request.username())) {
-                    userRep.setUsername(request.username());
-                }
-
-                keycloakUserResource.update(userRep);
-            } catch (Exception ex) {
-                logger.warn("⚠ Failed to update user in Keycloak for ID: {}", user.getKeycloakId(), ex);
-            }
-        }
     }
 
     private void mergeUser(User user, UserRequest request) {
-        if (StringUtils.isNotBlank(request.phone())) {
+        if (request.phone() != null) {
             user.setPhone(request.phone());
         }
         if (StringUtils.isNotBlank(request.biography())) {
@@ -150,54 +73,22 @@ public class UserService {
 
     public Page<UserResponse> findAllUsers(int page, int size) {
         int first = page * size;
-
-        // Lấy danh sách người dùng từ Keycloak
         List<UserRepresentation> kcUsers = realmResource().users().list(first, size);
         long total = realmResource().users().count();
 
         List<UserResponse> dtos = kcUsers.stream().map(u -> {
-            // Lấy danh sách roles từ Keycloak user
-            List<String> roles = u.getRealmRoles();
-
-            // Ưu tiên lấy role: admin > doctor > patient
-            String role = roles.stream()
-                    .filter(r -> List.of("admin", "doctor", "patient").contains(r))
-                    .findFirst()
-                    .orElse(null);
-
-            // Tạo fullName
-            String fullName = String.format("%s %s",
-                    u.getFirstName() != null ? u.getFirstName() : "",
-                    u.getLastName() != null ? u.getLastName() : ""
-            ).trim();
-            if (fullName.isEmpty()) fullName = null;
-
-            User user = findRawByKeycloakId(u.getId());
-
-            // Ánh xạ thành UserResponse
             UserResponse resp = mapper.coreToResponse(
-                    user.getId(),
-                    u.getUsername(),
-                    u.getEmail(),
-                    fullName,
-                    role
+                    u.getId(), u.getUsername(), u.getEmail(),
+                    u.getFirstName() + " " + u.getLastName(),
+                    u.getRealmRoles()
             );
 
-            // Gộp dữ liệu profile từ MongoDB nếu có
-            return repo.findByKeycloakId(u.getId())
-                    .map(profile -> mapper.fillProfile(resp, profile))
-                    .orElse(resp);
-
-        }).toList();
+            repo.findByKeycloakId(u.getId())
+                    .ifPresent(profile -> mapper.fillProfile(resp, profile));
+            return resp;
+        }).collect(Collectors.toList());
 
         return new PageImpl<>(dtos, PageRequest.of(page, size), total);
-    }
-
-    public User findRawByKeycloakId(String keycloakId) {
-        User user = this.repo.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new UserNotFoundException(
-                        String.format("Cannot find User:: No User found with the provided Keycloak ID: %s", keycloakId)));
-        return user;
     }
 
     public UserResponse findById(String keycloakId) {
@@ -216,42 +107,36 @@ public class UserService {
             throw new UserNotFoundException(String.format("No User found with ID: %s", keycloakId));
         }
 
-        // Step 1: Lấy role hợp lệ duy nhất
-        String role = null;
+        List<String> realmRoles;
         try {
-            List<String> roles = realmResource()
+            realmRoles = realmResource()
                     .users()
                     .get(keycloakId)
                     .roles()
                     .realmLevel()
                     .listAll()
                     .stream()
-                    .map(r -> r.getName())
-                    .toList();
-
-            role = roles.stream()
-                    .filter(r -> List.of("admin", "doctor", "patient").contains(r))
-                    .findFirst()
-                    .orElse(null);
+                    .map(role -> role.getName())
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             logger.warn("⚠ Failed to fetch roles for user ID: {}", keycloakId, e);
+            realmRoles = null;
         }
 
         String fullName = String.format("%s %s",
                 userRepresentation.getFirstName() != null ? userRepresentation.getFirstName() : "",
                 userRepresentation.getLastName() != null ? userRepresentation.getLastName() : ""
         ).trim();
-        if (fullName.isEmpty()) fullName = null;
-
-        System.out.println("Keycloak ID: " + keycloakId);
-        User users = findRawByKeycloakId(keycloakId);
+        if (fullName.isEmpty()) {
+            fullName = null;
+        }
 
         UserResponse response = mapper.coreToResponse(
-                users.getId(),
+                keycloakId,
                 userRepresentation.getUsername(),
                 userRepresentation.getEmail(),
                 fullName,
-                role
+                realmRoles
         );
 
         return repo.findByKeycloakId(keycloakId)
@@ -262,25 +147,7 @@ public class UserService {
                 .orElse(response);
     }
 
-
     public void deleteUser(String mongoId) {
-        User user = repo.findById(mongoId)
-                .orElseThrow(() -> new UserNotFoundException(
-                        String.format("❌ Cannot delete: No user found in MongoDB with ID: %s", mongoId)));
-
-        if (StringUtils.isNotBlank(user.getKeycloakId())) {
-            try {
-                realmResource().users().get(user.getKeycloakId()).remove();
-                logger.info("🗑️ Successfully deleted user in Keycloak: {}", user.getKeycloakId());
-            } catch (Exception e) {
-                logger.error("⚠️ Failed to delete user in Keycloak: {}", user.getKeycloakId(), e);
-            }
-        }
-
-        // 3. Xoá mềm trong MongoDB (nếu dùng soft-delete)
-        user.setDeletedAt(LocalDateTime.now());
-        repo.save(user);
-        logger.info("✅ Soft-deleted user in MongoDB with ID: {}", mongoId);
+        this.repo.deleteById(mongoId);
     }
-
 }
