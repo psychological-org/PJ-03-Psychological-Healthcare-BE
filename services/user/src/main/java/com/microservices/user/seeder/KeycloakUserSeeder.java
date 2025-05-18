@@ -10,6 +10,7 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -50,7 +51,8 @@ public class KeycloakUserSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         InputStream is = new ClassPathResource("seed/users.json").getInputStream();
-        List<Map<String, Object>> users = mapper.readValue(is, new TypeReference<>() {});
+        List<Map<String, Object>> users = mapper.readValue(is, new TypeReference<>() {
+        });
 
         String accessToken = getAdminAccessToken();
 
@@ -77,8 +79,7 @@ public class KeycloakUserSeeder implements CommandLineRunner {
                     serverUrl + "/admin/realms/" + realm + "/users",
                     HttpMethod.POST,
                     request,
-                    Void.class
-            );
+                    Void.class);
 
             if (response.getStatusCode() != HttpStatus.CREATED) {
                 throw new RuntimeException("❌ Failed to create user: " + username);
@@ -129,12 +130,12 @@ public class KeycloakUserSeeder implements CommandLineRunner {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 serverUrl + "/realms/" + realm + "/protocol/openid-connect/token",
                 HttpMethod.POST,
                 request,
-                Map.class
-        );
+                new ParameterizedTypeReference<>() {
+                });
 
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("❌ Failed to obtain access token: " + response.getStatusCode());

@@ -1,6 +1,5 @@
 package com.microservices.notification.post;
 
-import com.microservices.notification.user.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

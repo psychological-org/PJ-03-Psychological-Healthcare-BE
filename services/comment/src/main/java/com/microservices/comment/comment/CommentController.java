@@ -1,7 +1,5 @@
 package com.microservices.comment.comment;
 
-import java.util.List;
-
 import com.microservices.comment.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

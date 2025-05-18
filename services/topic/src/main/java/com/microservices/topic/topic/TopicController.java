@@ -1,7 +1,5 @@
 package com.microservices.topic.topic;
 
-import java.util.List;
-
 import com.microservices.topic.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

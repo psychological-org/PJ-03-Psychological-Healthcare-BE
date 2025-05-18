@@ -1,7 +1,5 @@
 package com.microservices.post.post;
 
-import java.util.List;
-
 import com.microservices.post.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,5 @@
 package com.microservices.user.user;
 
-import java.util.List;
-
 import com.microservices.user.utils.PagedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -34,12 +32,10 @@ public class UserController {
     @GetMapping
     public ResponseEntity<PagedResponse<UserResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         Page<UserResponse> p = service.findAllUsers(page, size);
         return ResponseEntity.ok(
-                new PagedResponse<>(p.getContent(), p.getTotalPages(), p.getTotalElements())
-        );
+                new PagedResponse<>(p.getContent(), p.getTotalPages(), p.getTotalElements()));
     }
 
     @GetMapping("/{user-id}")
