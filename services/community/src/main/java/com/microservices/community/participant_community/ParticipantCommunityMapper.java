@@ -1,6 +1,5 @@
 package com.microservices.community.participant_community;
 
-import com.microservices.community.community.Community;
 import org.springframework.stereotype.Service;
 
 @Service

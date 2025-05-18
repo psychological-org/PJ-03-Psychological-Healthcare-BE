@@ -1,6 +1,5 @@
 package com.microservices.notification.user_notification;
 
-import com.microservices.notification.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

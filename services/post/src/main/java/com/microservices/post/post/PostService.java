@@ -35,26 +35,22 @@ public class PostService {
 
     public Integer createPost(PostRequest request) {
         try {
-            // Tìm và kiểm tra User
-            UserResponse user;
+            // Kiểm tra user tồn tại (không dùng biến user)
             try {
-                var response = userClient.findById(request.userId());
-                if (response == null || response.getBody() == null) {
+                var userResponse = userClient.findById(request.userId());
+                if (userResponse == null || userResponse.getBody() == null) {
                     throw new UserNotFoundException("User not found with ID: " + request.userId());
                 }
-                user = response.getBody();
             } catch (FeignException.NotFound e) {
                 throw new UserNotFoundException("User not found with ID: " + request.userId());
             }
 
-            // Tìm và kiểm tra Community
-            CommunityResponse community;
+            // Kiểm tra community tồn tại (không dùng biến community)
             try {
-                var response = communityClient.findById(request.communityId());
-                if (response == null || response.getBody() == null) {
+                var communityResponse = communityClient.findById(request.communityId());
+                if (communityResponse == null || communityResponse.getBody() == null) {
                     throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
                 }
-                community = response.getBody();
             } catch (FeignException.NotFound e) {
                 throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
             }
@@ -71,7 +67,6 @@ public class PostService {
         }
     }
 
-
     public void updatePost(PostRequest request) {
         var post = this.repository.findById(request.id())
                 .orElseThrow(() -> new PostNotFoundException(
@@ -86,15 +81,20 @@ public class PostService {
         if (request.userId() != null) {
             try {
                 ResponseEntity<UserResponse> userResponse = userClient.findById(request.userId());
-                if (userResponse != null && userResponse.getBody() != null) {
-                    post.setUserId(userResponse.getBody().id());
+                if (userResponse != null) {
+                    UserResponse userBody = userResponse.getBody();
+                    if (userBody != null) {
+                        post.setUserId(userBody.id());
+                    } else {
+                        throw new UserNotFoundException("User response body is null for ID: " + request.userId());
+                    }
                 } else {
-                    throw new UserNotFoundException("User not found with ID: " + request.userId());
+                    throw new UserNotFoundException("User response is null for ID: " + request.userId());
                 }
             } catch (FeignException.NotFound e) {
                 throw new UserNotFoundException("User not found with ID: " + request.userId());
-            }catch (Exception e) {
-                throw new RuntimeException("An error occurred while creating the post: " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException("An error occurred while updating the post userId: " + e.getMessage(), e);
             }
         }
 
@@ -107,14 +107,22 @@ public class PostService {
         if (request.communityId() != null) {
             try {
                 ResponseEntity<CommunityResponse> communityResponse = communityClient.findById(request.communityId());
-                if (communityResponse == null || communityResponse.getBody() == null) {
-                    throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
+                if (communityResponse != null) {
+                    CommunityResponse communityBody = communityResponse.getBody();
+                    if (communityBody != null) {
+                        post.setCommunityId(request.communityId()); // Nếu bạn có trường này trong Post
+                    } else {
+                        throw new CommunityNotFoundException(
+                                "Community response body is null for ID: " + request.communityId());
+                    }
+                } else {
+                    throw new CommunityNotFoundException("Community response is null for ID: " + request.communityId());
                 }
-                post.setCommunityId(request.communityId()); // Nếu bạn có trường này trong Post
             } catch (FeignException.NotFound e) {
                 throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
-            }catch (Exception e) {
-                throw new RuntimeException("An error occurred while creating the post: " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException("An error occurred while updating the post communityId: " + e.getMessage(),
+                        e);
             }
         }
 

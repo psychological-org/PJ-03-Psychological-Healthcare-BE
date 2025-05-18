@@ -2,9 +2,6 @@ package com.microservices.user.user;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -31,14 +28,14 @@ public class UserService {
     private final UserMapper mapper;
 
     private final Keycloak keycloak;
-    @Value("${keycloak.realm}") private String realm;
+    @Value("${keycloak.realm}")
+    private String realm;
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private RealmResource realmResource() {
         return keycloak.realm(realm);
     }
-
 
     public String createUser(UserRequest request) {
         if (request.password() == null || request.password().isBlank()) {
@@ -86,7 +83,6 @@ public class UserService {
 
         return user.getId();
     }
-
 
     public void updateUser(UserRequest request) {
         // 1. Kiểm tra user MongoDB có tồn tại không
@@ -168,9 +164,9 @@ public class UserService {
             // Tạo fullName
             String fullName = String.format("%s %s",
                     u.getFirstName() != null ? u.getFirstName() : "",
-                    u.getLastName() != null ? u.getLastName() : ""
-            ).trim();
-            if (fullName.isEmpty()) fullName = null;
+                    u.getLastName() != null ? u.getLastName() : "").trim();
+            if (fullName.isEmpty())
+                fullName = null;
 
             User user = findRawByKeycloakId(u.getId());
 
@@ -180,8 +176,7 @@ public class UserService {
                     u.getUsername(),
                     u.getEmail(),
                     fullName,
-                    role
-            );
+                    role);
 
             // Gộp dữ liệu profile từ MongoDB nếu có
             return repo.findByKeycloakId(u.getId())
@@ -196,7 +191,8 @@ public class UserService {
     public User findRawByKeycloakId(String keycloakId) {
         User user = this.repo.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new UserNotFoundException(
-                        String.format("Cannot find User:: No User found with the provided Keycloak ID: %s", keycloakId)));
+                        String.format("Cannot find User:: No User found with the provided Keycloak ID: %s",
+                                keycloakId)));
         return user;
     }
 
@@ -239,9 +235,9 @@ public class UserService {
 
         String fullName = String.format("%s %s",
                 userRepresentation.getFirstName() != null ? userRepresentation.getFirstName() : "",
-                userRepresentation.getLastName() != null ? userRepresentation.getLastName() : ""
-        ).trim();
-        if (fullName.isEmpty()) fullName = null;
+                userRepresentation.getLastName() != null ? userRepresentation.getLastName() : "").trim();
+        if (fullName.isEmpty())
+            fullName = null;
 
         System.out.println("Keycloak ID: " + keycloakId);
         User users = findRawByKeycloakId(keycloakId);
@@ -251,8 +247,7 @@ public class UserService {
                 userRepresentation.getUsername(),
                 userRepresentation.getEmail(),
                 fullName,
-                role
-        );
+                role);
 
         return repo.findByKeycloakId(keycloakId)
                 .map(profile -> {
@@ -261,7 +256,6 @@ public class UserService {
                 })
                 .orElse(response);
     }
-
 
     public void deleteUser(String mongoId) {
         User user = repo.findById(mongoId)

@@ -15,7 +15,7 @@ public class NotificationService {
     public String createNotification(NotificationRequest request) {
         Notification notification = notificationMapper.toNotification(request);
         Notification savedNotification = notificationRepository.save(notification);
-        return notification.getId();
+        return savedNotification.getId();
     }
 
     public NotificationResponse findOneById(String id) {

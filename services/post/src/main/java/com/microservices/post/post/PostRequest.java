@@ -1,7 +1,5 @@
 package com.microservices.post.post;
 
-import jakarta.validation.constraints.NotNull;
-
 public record PostRequest(
         Integer id,
         String content,

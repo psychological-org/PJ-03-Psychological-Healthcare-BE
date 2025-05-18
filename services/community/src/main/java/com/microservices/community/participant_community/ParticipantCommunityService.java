@@ -72,7 +72,7 @@ public class ParticipantCommunityService {
             participantCommunity.setUserId(request.userId());
         }
         if (request.communityId() != null) {
-            var collectionResponse = communityService.findById(request.communityId());
+            // var collectionResponse = communityService.findById(request.communityId());
             participantCommunity.setCommunityId(request.communityId());
         }
     }
@@ -85,7 +85,7 @@ public class ParticipantCommunityService {
     }
 
     public void deleteById(Integer id) {
-        var participantCommunity = this.participantCommunityRepository.findById(id)
+        this.participantCommunityRepository.findById(id)
                 .orElseThrow(() -> new ParticipantCommunityNotFoundException(
                         String.format("Cannot delete participant community:: No participant community found with the provided ID: %s",
                                 id)));

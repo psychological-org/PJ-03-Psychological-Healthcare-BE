@@ -1,7 +1,5 @@
 package com.microservices.collection.topic;
 
-import java.util.Optional;
-
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

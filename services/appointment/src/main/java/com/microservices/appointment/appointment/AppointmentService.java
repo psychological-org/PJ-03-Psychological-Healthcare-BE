@@ -13,7 +13,6 @@ import feign.FeignException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.microservices.appointment.exception.AppointmentNotFoundException;
@@ -35,12 +34,12 @@ public class AppointmentService {
             Optional<UserResponse> doctorOptional = userClient.findUserById(request.doctorId());
             if (doctorOptional.isEmpty())
                 throw new UserNotFoundException("Doctor not found with ID: " + request.doctorId());
-            UserResponse doctorResponse = doctorOptional.get();
+            // UserResponse doctorResponse = doctorOptional.get();
 
             Optional<UserResponse> patientOptional = userClient.findUserById(request.patientId());
             if (patientOptional.isEmpty())
                 throw new UserNotFoundException("Patient not found with ID: " + request.patientId());
-            UserResponse patientResponse = patientOptional.get();
+            // UserResponse patientResponse = patientOptional.get();
 
             var appointment = this.repository.save(mapper.toAppointment(request));
             appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment));
@@ -85,14 +84,14 @@ public class AppointmentService {
             Optional<UserResponse> patientOptional = userClient.findUserById(request.patientId());
             if (patientOptional.isEmpty())
                 throw new UserNotFoundException("Patient not found with ID: " + request.patientId());
-            UserResponse patientResponse = patientOptional.get();
+            // UserResponse patientResponse = patientOptional.get();
             appointment.setPatientId(request.patientId());
         }
         if (request.doctorId() != null) {
             Optional<UserResponse> doctorOptional = userClient.findUserById(request.doctorId());
             if (doctorOptional.isEmpty())
                 throw new UserNotFoundException("Doctor not found with ID: " + request.doctorId());
-            UserResponse doctorResponse = doctorOptional.get();
+            // UserResponse doctorResponse = doctorOptional.get();
             appointment.setDoctorId(request.doctorId());
         }
     }
