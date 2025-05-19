@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "com.microservices.notification")
+@EnableFeignClients
 @EnableDiscoveryClient
 @EnableMongoAuditing
 public class NotificationApplication {

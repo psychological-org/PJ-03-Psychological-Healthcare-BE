@@ -1,5 +1,6 @@
 package com.microservices.notification.user_notification;
 
+import com.microservices.notification.utils.PagedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/notifications/user-notification")
 @RequiredArgsConstructor
 public class UserNotificationController {
-    private UserNotificationService userNotificationService;
+    private final UserNotificationService userNotificationService;
 
     @PostMapping
     public ResponseEntity<Void> createUserNotification(UserNotificationRequest request) {
@@ -31,5 +32,15 @@ public class UserNotificationController {
             @PathVariable("user-id") String userId,
             @PathVariable("notification-id") String notificationId) {
         return ResponseEntity.ok(this.userNotificationService.findByUserIdAndNotificationId(userId, notificationId));
+    }
+
+
+    // Lấy tất cả thông báo trong hệ thống
+    @GetMapping("/all")
+    public ResponseEntity<PagedResponse<UserNotificationResponse>> findAll(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(this.userNotificationService.findAll(page , limit));
     }
 }

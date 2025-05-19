@@ -41,7 +41,6 @@ public class NotificationConsumer {
         private final FollowClient followClient;
         private final SimpMessagingTemplate messagingTemplate;
 
-        @Autowired
         private final UserClient userClient;
         private final PostClient postClient;
 
@@ -50,9 +49,10 @@ public class NotificationConsumer {
                 log.info("Consuming the message from comment-topic Topic:: {}", commentNotification);
                 try {
                         final String templateName = " đã bình luận về bài viết của bạn";
+                        UserResponse userResponse;
 
                         try {
-                                UserResponse userResponse = userClient.findById("682a976ae5cb142bd93c585e").getBody();
+                                userResponse = userClient.findById("682a976ae5cb142bd93c585e").getBody();
                                 log.info("User found: {}", userResponse);
                         } catch (FeignException e) {
                                 log.error("User not found for ID: {}", e);
@@ -77,6 +77,7 @@ public class NotificationConsumer {
                         PostResponse postResponse;
                         try {
                                 postResponse = postClient.findById(commentNotification.postId()).getBody();
+                                System.out.println("postResponse = " + postResponse);
                         } catch (Exception e) {
                                 log.error("Post not found for ID: {}", e);
                                 return;
@@ -84,7 +85,7 @@ public class NotificationConsumer {
 
                         log.info("Created new notification template: {}", notificationResponse);
 
-                        String userNotificationContent = "Người dùng " + commentNotification.userId()
+                        String userNotificationContent = userResponse.fullName()
                                         + notificationResponse.content();
                         // Lấy id user của post
                         UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
