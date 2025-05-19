@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "topic-service", path = "/api/v1/topics")
+@FeignClient(name = "topic-service", url="${application.config.topic-url}")
 public interface TopicClient {
 
     @GetMapping("/{topic-id}")

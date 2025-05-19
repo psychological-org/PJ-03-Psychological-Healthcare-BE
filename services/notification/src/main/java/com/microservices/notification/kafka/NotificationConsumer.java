@@ -1,6 +1,7 @@
 package com.microservices.notification.kafka;
 
 import com.microservices.notification.email.EmailService;
+import com.microservices.notification.exception.NotificationNotFoundException;
 import com.microservices.notification.follow.FollowClient;
 import com.microservices.notification.follow.FollowResponse;
 import com.microservices.notification.kafka.appointment.AppointmentNotification;
@@ -11,12 +12,16 @@ import com.microservices.notification.notification.NotificationRequest;
 import com.microservices.notification.notification.NotificationResponse;
 import com.microservices.notification.notification.NotificationService;
 import com.microservices.notification.notification.NotificationType;
+import com.microservices.notification.post.PostClient;
+import com.microservices.notification.post.PostResponse;
 import com.microservices.notification.user.UserClient;
 import com.microservices.notification.user.UserResponse;
 import com.microservices.notification.user_notification.UserNotificationRequest;
 import com.microservices.notification.user_notification.UserNotificationService;
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -38,41 +43,65 @@ public class NotificationConsumer {
 
         @Autowired
         private final UserClient userClient;
-        // private final PostClient postClient;
+        private final PostClient postClient;
 
         @KafkaListener(topics = "comment-topic", groupId = "commentGroup")
-        public void commentPostNotification(CommentNotification commentNotification) throws MessagingException {
+        public void commentPostNotification(CommentNotification commentNotification,  @Header(value = "Authorization", required = false) String jwt) throws MessagingException {
                 log.info("Consuming the message from comment-topic Topic:: {}", commentNotification);
-                UserResponse commentUser = null;
                 try {
-                        commentUser = userClient.findById(commentNotification.userId()).getBody();
-                        if (commentUser == null) {
-                                log.error("User not found for comment with ID: {}", commentNotification.userId());
-                                return; // hoặc ném exception tùy cách xử lý
+                        final String templateName = " đã bình luận về bài viết của bạn";
+
+                        try {
+                                UserResponse userResponse = userClient.findById("682a976ae5cb142bd93c585e").getBody();
+                                log.info("User found: {}", userResponse);
+                        } catch (FeignException e) {
+                                log.error("User not found for ID: {}", e);
+                                return;
                         }
 
-                        NotificationRequest newNotification = new NotificationRequest(null,
-                                        " đã bình luận về bài viết của bạn", NotificationType.COMMENT_NOTIFICATION);
-                        String notificationResponse = notificationService.createNotification(newNotification);
+                        NotificationResponse notificationResponse;
+                        try {
+                                // Thử lấy template, nếu không tìm thấy thì ném NotificationNotFoundException
+                                notificationResponse = notificationService.findNotificationByName(templateName);
+                        } catch (NotificationNotFoundException notFound) {
+                                NotificationRequest newTemplate = new NotificationRequest(
+                                        null,
+                                        templateName,
+                                        NotificationType.COMMENT_NOTIFICATION
+                                );
+                                String newId = notificationService.createNotification(newTemplate);
+                                notificationResponse = notificationService.findOneById(newId);
+                        }
+                        System.out.println("notificationResponse = " + notificationResponse);
 
-                        String userNotificationContent = "Người dùng " + commentUser.fullName()
-                                        + newNotification.content();
+                        PostResponse postResponse;
+                        try {
+                                postResponse = postClient.findById(commentNotification.postId()).getBody();
+                        } catch (Exception e) {
+                                log.error("Post not found for ID: {}", e);
+                                return;
+                        }
+
+                        log.info("Created new notification template: {}", notificationResponse);
+
+                        String userNotificationContent = "Người dùng " + commentNotification.userId()
+                                        + notificationResponse.content();
+                        // Lấy id user của post
                         UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
-                                        commentNotification.userId(), newNotification.id(), userNotificationContent,
+                                        postResponse.userId(), notificationResponse.id(), userNotificationContent,
                                         false);
                         userNotificationService.createUserNotification(userNotificationRequest);
 
-                        NotificationResponse notification = notificationService.findOneById(notificationResponse);
-                        log.info("Save comment notification: {}", notification);
+                        log.info("Save comment notification: {}", notificationResponse);
 
                         // send push notification to client
                         messagingTemplate.convertAndSendToUser(
                                         commentNotification.userId(),
                                         "/notification/comment",
-                                        notification);
+                                        notificationResponse);
 
                 } catch (RuntimeException e) {
-                        log.error("Error sending notification when someone comments: {}", e.getMessage());
+                        log.error("Error sending notification when someone comments: {}", e);
                 }
         }
 

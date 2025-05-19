@@ -11,22 +11,22 @@
         <module name="gateway" />
         <module name="discovery" />
       </profile>
-      <profile name="Annotation profile for user" enabled="true">
+      <profile name="Annotation profile for post" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="notification" />
         <module name="post" />
         <module name="topic" />
-        <module name="appointment" />
         <module name="comment" />
+        <module name="appointment" />
         <module name="collection" />
+        <module name="message" />
         <module name="follow" />
         <module name="community" />
-        <module name="message" />
         <module name="user" />
         <module name="attendance" />
       </profile>

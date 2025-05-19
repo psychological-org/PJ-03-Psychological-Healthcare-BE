@@ -42,13 +42,21 @@ public class CommentService {
             }
 
             // Check if the post exists
-            ResponseEntity<PostResponse> post = postClient.findPostById(request.postId());
+            ResponseEntity<PostResponse> post = postClient.findById(request.postId());
             if (post  == null || post.getBody() == null) {
                 throw new PostNotFoundException(
                         String.format("Cannot create community:: No post found with ID: %s", request.userId()));
             }
 
             var comment = this.repository.save(mapper.toComment(request));
+            CommentResponse commentMapper = new CommentResponse(
+                    comment.getId(),
+                    comment.getContent(),
+                    comment.getImageUrl(),
+                    response.getBody().fullName(),
+                    comment.getPostId(),
+                    comment.getReactCount()
+            );
             // Send follow event to Kafka
             commentProducer.sendNotificationOfNewCommentToPost(mapper.fromComment(comment));
             return comment.getId();
@@ -88,7 +96,7 @@ public class CommentService {
                     throw new UserNotFoundException(
                             String.format("Cannot update comment:: No user found with ID: %s", request.userId()));
                 }
-                ResponseEntity<PostResponse> post = postClient.findPostById(request.postId());
+                ResponseEntity<PostResponse> post = postClient.findById(request.postId());
                 if (post  == null || post.getBody() == null) {
                     throw new PostNotFoundException(
                             String.format("Cannot create community:: No post found with ID: %s", request.userId()));

@@ -6,7 +6,6 @@
     <file url="file://$PROJECT_DIR$/services/appointment/src/main/resources/db/migration/V2__seed_appointments.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/services/collection/src/main/resources/db/migration/V1__init_database.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/services/collection/src/main/resources/db/migration/V2__drop_database.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/services/collection/src/main/resources/db/migration/V2__seed_collections.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/services/comment/src/main/resources/db/migration/V1__init_database.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/services/comment/src/main/resources/db/migration/V2__seed_comments.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/services/community/src/main/resources/db/migration/V1__init_database.sql" dialect="PostgreSQL" />

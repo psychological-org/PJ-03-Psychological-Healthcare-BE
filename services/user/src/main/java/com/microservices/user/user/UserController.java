@@ -41,7 +41,8 @@ public class UserController {
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponse> findById(
             @PathVariable("user-id") String userId) {
-        User user = this.service.findRawByKeycloakId(userId);
+        System.out.println("User ID: " + userId);
+        User user = this.service.findRawByUserId(userId);
         return ResponseEntity.ok(this.service.findById(user.getKeycloakId()));
     }
 

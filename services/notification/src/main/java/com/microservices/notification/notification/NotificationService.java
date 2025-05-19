@@ -32,4 +32,12 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    public NotificationResponse findNotificationByName(String name) {
+        Notification notification = notificationRepository.findByNameAndDeletedAtIsNull(name);
+        if (notification == null) {
+            throw new NotificationNotFoundException("Notification not found");
+        }
+        return notificationMapper.fromNotification(notification);
+    }
+
 }
