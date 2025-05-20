@@ -2,6 +2,8 @@ package com.microservices.notification.kafka;
 
 import com.microservices.notification.email.EmailService;
 import com.microservices.notification.exception.NotificationNotFoundException;
+import com.microservices.notification.fcm_token.FcmTokenClient;
+import com.microservices.notification.fcm_token.FcmTokenResponse;
 import com.microservices.notification.follow.FollowClient;
 import com.microservices.notification.follow.FollowResponse;
 import com.microservices.notification.kafka.appointment.AppointmentNotification;
@@ -43,6 +45,7 @@ public class NotificationConsumer {
 
         private final UserClient userClient;
         private final PostClient postClient;
+        private final FcmTokenClient fcmTokenClient;
 
         @KafkaListener(topics = "comment-topic", groupId = "commentGroup")
         public void commentPostNotification(CommentNotification commentNotification,  @Header(value = "Authorization", required = false) String jwt) throws MessagingException {
@@ -95,11 +98,19 @@ public class NotificationConsumer {
 
                         log.info("Save comment notification: {}", notificationResponse);
 
-                        // send push notification to client
-                        messagingTemplate.convertAndSendToUser(
-                                        commentNotification.userId(),
-                                        "/notification/comment",
-                                        notificationResponse);
+                        // send push notification to client by fcm
+                        List<FcmTokenResponse> fcmTokenResponses = fcmTokenClient
+                                        .findByUserId(postResponse.userId()).getBody();
+                        System.out.println("fcmTokenResponses = " + fcmTokenResponses.get(fcmTokenResponses.size() - 1).toString());
+                        fcmTokenResponses.forEach(fcmTokenResponse -> {
+                                try {
+                                        notificationService.sendPushNotificationByFirebase(fcmTokenResponse.fcmToken(),
+                                                userNotificationContent,
+                                                commentNotification.content());
+                                } catch (Exception e) {
+                                        log.error("Error sending push notification: {}", e.getMessage());
+                                }
+                        });
 
                 } catch (RuntimeException e) {
                         log.error("Error sending notification when someone comments: {}", e);
@@ -117,9 +128,19 @@ public class NotificationConsumer {
                                 return;
                         }
 
-                        NotificationRequest newNotification = new NotificationRequest(null,
-                                        " đã theo dõi bạn trên nền tảng", NotificationType.FOLLOW_NOTIFICATION);
-                        String notificationResponse = notificationService.createNotification(newNotification);
+                        final String templateName = " đã theo dõi bạn trên nền tảng";
+                        NotificationResponse newNotification;
+                        try {
+                                newNotification = notificationService.findNotificationByName(templateName);
+                        } catch (NotificationNotFoundException notFound) {
+                                NotificationRequest newTemplate = new NotificationRequest(
+                                        null,
+                                        templateName,
+                                        NotificationType.FOLLOW_NOTIFICATION
+                                );
+                                String newId = notificationService.createNotification(newTemplate);
+                                newNotification = notificationService.findOneById(newId);
+                        }
 
                         String userNotificationContent = "Người dùng " + followUser.fullName()
                                         + newNotification.content();
@@ -128,17 +149,19 @@ public class NotificationConsumer {
                                         false);
                         userNotificationService.createUserNotification(userNotificationRequest);
 
-                        NotificationResponse notification = notificationService.findOneById(notificationResponse);
-                        log.info("Save follow notification: {}", notification);
-
                         // send push notification to client
-                        messagingTemplate.convertAndSendToUser(
-                                        followNotification.receiverId(),
-                                        "/notification/follow",
-                                        notification);
-
-                        messagingTemplate.convertAndSendToUser(followNotification.receiverId(), "/notification/follow",
-                                        notificationResponse);
+                        List<FcmTokenResponse> fcmTokenResponses = fcmTokenClient
+                                        .findByUserId(followNotification.receiverId()).getBody();
+                        System.out.println("fcmTokenResponses = " + fcmTokenResponses.get(fcmTokenResponses.size() - 1).toString());
+                        fcmTokenResponses.forEach(fcmTokenResponse -> {
+                                try {
+                                        notificationService.sendPushNotificationByFirebase(fcmTokenResponse.fcmToken(),
+                                                "Người dùng theo dõi bạn",
+                                                userNotificationContent);
+                                } catch (Exception e) {
+                                        log.error("Error sending push notification: {}", e.getMessage());
+                                }
+                        });
 
                 } catch (RuntimeException e) {
                         log.error("Error sending notification when someone follows: {}", e.getMessage());
@@ -149,12 +172,27 @@ public class NotificationConsumer {
         public void consumerAppointmentNotification(AppointmentNotification notification) throws MessagingException {
                 log.info("Consuming the message from appointment-topic Topic:: {}", notification.toString());
                 try {
-                        NotificationRequest request = new NotificationRequest(null, "Thông báo xác nhận đặt lịch",
-                                        NotificationType.APPOINTMENT_NOTIFICATION);
-                        String notificationResponse = notificationService.createNotification(request);
+//                        NotificationRequest request = new NotificationRequest(null, "Thông báo xác nhận đặt lịch",
+//                                        NotificationType.APPOINTMENT_NOTIFICATION);
+//                        String notificationResponse = notificationService.createNotification(request);
+
+                        final String templateName = "Thông báo xác nhận đặt lịch";
+                        NotificationResponse notificationResponse;
+                        try {
+                                // Thử lấy template, nếu không tìm thấy thì ném NotificationNotFoundException
+                                notificationResponse = notificationService.findNotificationByName(templateName);
+                        } catch (NotificationNotFoundException notFound) {
+                                NotificationRequest newTemplate = new NotificationRequest(
+                                        null,
+                                        templateName,
+                                        NotificationType.FOLLOW_NOTIFICATION
+                                );
+                                String newId = notificationService.createNotification(newTemplate);
+                                notificationResponse = notificationService.findOneById(newId);
+                        }
 
                         UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
-                                        notification.patientId(), notificationResponse, "Thông báo xác nhận đặt lịch",
+                                        notification.patientId(), notificationResponse.id(), "Thông báo xác nhận đặt lịch",
                                         false);
                         userNotificationService.createUserNotification(userNotificationRequest);
 
@@ -174,12 +212,27 @@ public class NotificationConsumer {
                 }
                 String userResponseContent = "Người dùng " + poster.fullName() + " đã đăng tải bài viết mới";
                 try {
-                        NotificationRequest newNotification = new NotificationRequest(
+//                        NotificationRequest newNotification = new NotificationRequest(
+//                                        null,
+//                                        "Người dùng đăng tải bài viết mới",
+//                                        NotificationType.POST_NOTIFICATION);
+//                        String notificationId = notificationService.createNotification(newNotification);
+//                        NotificationResponse notification = notificationService.findOneById(notificationId);
+
+                        final String templateName = "Người dùng đăng tải bài viết mới";
+                        NotificationResponse newNotification;
+                        try {
+                                // Thử lấy template, nếu không tìm thấy thì ném NotificationNotFoundException
+                                newNotification = notificationService.findNotificationByName(templateName);
+                        } catch (NotificationNotFoundException notFound) {
+                                NotificationRequest newTemplate = new NotificationRequest(
                                         null,
-                                        "Người dùng đăng tải bài viết mới",
-                                        NotificationType.POST_NOTIFICATION);
-                        String notificationId = notificationService.createNotification(newNotification);
-                        NotificationResponse notification = notificationService.findOneById(notificationId);
+                                        templateName,
+                                        NotificationType.FOLLOW_NOTIFICATION
+                                );
+                                String newId = notificationService.createNotification(newTemplate);
+                                newNotification = notificationService.findOneById(newId);
+                        }
 
                         List<FollowResponse> followResponse = followClient
                                         .findAllFriendByUserIdNotPaginate(post.userId())
@@ -200,16 +253,25 @@ public class NotificationConsumer {
                                 UserNotificationRequest userNotificationRequest = new UserNotificationRequest(
                                                 null,
                                                 targetUserId,
-                                                notificationId,
+                                                newNotification.id(),
                                                 userResponseContent,
                                                 false);
 
                                 userNotificationService.createUserNotification(userNotificationRequest);
 
-                                messagingTemplate.convertAndSendToUser(
-                                                targetUserId,
-                                                "/notification/post",
-                                                notification);
+                                // Send push notification to user
+                                List<FcmTokenResponse> fcmTokenResponses = fcmTokenClient
+                                        .findByUserId(targetUserId).getBody();
+                                System.out.println("fcmTokenResponses = " + fcmTokenResponses.get(fcmTokenResponses.size() - 1).toString());
+                                fcmTokenResponses.forEach(fcmTokenResponse -> {
+                                        try {
+                                                notificationService.sendPushNotificationByFirebase(fcmTokenResponse.fcmToken(),
+                                                        "Bài viết mới",
+                                                        userResponseContent);
+                                        } catch (Exception e) {
+                                                log.error("Error sending push notification: {}", e.getMessage());
+                                        }
+                                });
                         }
                 } catch (Exception e) {
                         log.error("Error processing post notification: {}", e.getMessage());
