@@ -166,6 +166,18 @@ services:
       - config-server
       - discovery-service
 
+  recommended-service:
+    build:
+      context: ./recommended
+    container_name: recommended-service
+    ports:
+      - "8120:8120"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
 networks:
   pj-03-psychological-healthcare-be_microservices-net:
     external: true
