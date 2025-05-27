@@ -177,6 +177,9 @@ services:
     depends_on:
       - config-server
       - discovery-service
+    environment:
+    - HF_TOKEN=${HF_TOKEN}
+    - GEMINI_API_KEY=${GEMINI_API_KEY}
 
 networks:
   pj-03-psychological-healthcare-be_microservices-net:
