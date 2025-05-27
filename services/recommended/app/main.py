@@ -1,17 +1,13 @@
+# app/main.py
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+
+# import các routers qua app.translation và app.emotion
+from app.translation.router import translation_router
+from app.emotion.router import emotion_router
+from app.qna.router import qna_router
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/api/v1/recommended/search-similar")
-def search_similar_food():
-    return "search-similar endpoint is working"
-
+app.include_router(translation_router, prefix="/api/v1/recommended/translate", tags=["translate"])
+app.include_router(emotion_router,     prefix="/api/v1/recommended/emotion",   tags=["emotion"])
+app.include_router(qna_router, prefix="/api/v1/recommended/qna", tags=["qna"])
