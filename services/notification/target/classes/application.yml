@@ -1,0 +1,63 @@
+spring:
+  config:
+    import: optional:configserver:http://config-server:8888
+  application:
+    name: notification-service
+  data:
+    mongodb:
+      username: root
+      password: Admin@123
+      host: mongodb
+      port: 27017
+      database: notification
+      authentication-database: admin
+  mail:
+    host: mail-dev
+    port: 1025
+    username: root
+    password: Admin@123
+    properties:
+      mail:
+        smtp:
+          trust: "*"
+        auth: true
+        starttls:
+          enabled: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: followGroup,commentGroup,postGroup,appointmentGroup,attendanceGroup
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+        spring.json.type.mapping: followNotification:com.microservices.notification.kafka.follow.FollowNotification,
+          postNotification:com.microservices.notification.kafka.post.PostNotification,
+          commentNotification:com.microservices.notification.kafka.comment.CommentNotification,
+          appointmentNotification:com.microservices.notification.kafka.appointment.AppointmentNotification,
+          attendanceNotification:com.microservices.notification.kafka.attendance.AttendanceNotification
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+application:
+  config:
+    user-url: http://gateway-service:8222/api/v1/users
+    post-url: http://gateway-service:8222/api/v1/posts
+
+firebase:
+  service-account-file: classpath:service-account-file.json

@@ -1,0 +1,12 @@
+#eureka:
+#  instance:
+#    hostname: config-server
+#  client:
+#    service-url:
+#      defaultZone: http://discovery-service:8761/eureka
+name:
+  value: microservices
+spring:
+  cloud:
+    config:
+      override-system-properties: false

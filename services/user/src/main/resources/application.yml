@@ -1,0 +1,43 @@
+spring:
+  config:
+    import: optional:configserver:http://config-server:8888
+  application:
+    name: user-service
+  data:
+    mongodb:
+      username: root
+      password: Admin@123
+      host: mongodb
+      port: 27017
+      database: user
+      authentication-database: admin
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/micro-services
+          jwk-set-uri: http://keycloak:8080/realms/micro-services/protocol/openid-connect/certs
+
+keycloak:
+  admin:
+    server-url: http://keycloak:8080           # trùng với port host
+    realm: micro-services                          # realm chứa admin-cli
+    client-id: authservice
+    client-secret: VH75aWwezCJlDIhAu2QGOtFVYhIpwWqS
+    username: loantuyet
+    password: loantuyet
+  realm: micro-services
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+

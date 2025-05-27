@@ -1,0 +1,6 @@
+server:
+  port: 8020
+
+application:
+  config:
+    topic-url: http://gateway-service:8222/api/v1/topics

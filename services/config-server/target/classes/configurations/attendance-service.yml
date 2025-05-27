@@ -1,0 +1,32 @@
+server:
+  port: 8070
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgresql:5432/attendance
+    username: root
+    password: Admin@123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    baseline-on-migrate: true
+    enabled: true
+    baseline-description: "init"
+    baseline-version: 0
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+  kafka:
+    producer:
+      bootstrap-servers: kafka:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      # properties:
+      #   spring.json.type.mapping: orderConfirmation:com.microservices.ecommerce.kafka.OrderConfirmation
+
+application:
+  config:
+    user-url: http://gateway-service:8222/api/v1/users
+    community-url: http://gateway-service:8222/api/v1/communities

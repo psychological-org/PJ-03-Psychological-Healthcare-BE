@@ -1,0 +1,85 @@
+server:
+  port: 8222
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/micro-services
+          jwk-set-uri: http://keycloak:8080/realms/micro-services/protocol/openid-connect/certs
+  config:
+    import: optional:configserver:http://config-server:8888
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: user-service
+          uri: lb:http://USER-SERVICE
+          predicates:
+            - Path=/api/v1/users/**
+        - id: notification-service
+          uri: lb:http://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/v1/notifications/**
+        - id: message-service
+          uri: lb:http://MESSAGE-SERVICE
+          predicates:
+            - Path=/api/v1/messages/**
+        - id: collection-service
+          uri: lb:http://COLLECTION-SERVICE
+          predicates:
+            - Path=/api/v1/collections/**
+        - id: topic-service
+          uri: lb:http://TOPIC-SERVICE
+          predicates:
+            - Path=/api/v1/topics/**
+        - id: diary-service
+          uri: lb:http://DIARY-SERVICE
+          predicates:
+            - Path=/api/v1/diaries/**
+        - id: follow-service
+          uri: lb:http://FOLLOW-SERVICE
+          predicates:
+            - Path=/api/v1/follows/**
+        - id: attendance-service
+          uri: lb:http://ATTENDANCE-SERVICE
+          predicates:
+            - Path=/api/v1/attendances/**
+        - id: appointment-service
+          uri: lb:http://APPOINTMENT-SERVICE
+          predicates:
+            - Path=/api/v1/appointments/**
+        - id: community-service
+          uri: lb:http://COMMUNITY-SERVICE
+          predicates:
+            - Path=/api/v1/communities/**
+        - id: comment-service
+          uri: lb:http://COMMENT-SERVICE
+          predicates:
+            - Path=/api/v1/comments/**
+        - id: post-service
+          uri: lb:http://POST-SERVICE
+          predicates:
+            - Path=/api/v1/posts/**
+        - id: recommended-service
+          uri: http://recommended-service:8120
+          predicates:
+            - Path=/api/v1/recommended/**
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka

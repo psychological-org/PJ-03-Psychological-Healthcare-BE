@@ -1,0 +1,40 @@
+spring:
+  config:
+    import: optional:configserver:http://config-server:8888
+  application:
+    name: comment-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgresql:5432/comment
+    username: root
+    password: Admin@123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    producer:
+      bootstrap-servers: kafka:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: commentNotification:com.microservices.comment.comment.CommentResponse
+
+application:
+  config:
+    user-url: http://gateway-service:8222/api/v1/users
+    post-url: http://gateway-service:8222/api/v1/posts
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans

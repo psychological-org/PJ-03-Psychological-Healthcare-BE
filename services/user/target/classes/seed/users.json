@@ -1,0 +1,49 @@
+[
+  {
+    "id": "0e370c47-9a29-4a8e-8f17-4e473d68cadd",
+    "firstName": "Nguyen",
+    "lastName": "Van A",
+    "username": "nguyenvana",
+    "email": "nguyenvana@example.com",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "nguyenvana",
+        "temporary": false
+      }
+    ],
+    "metadata": {
+      "biography": "Psychologist",
+      "yearOfBirth": "2000",
+      "yearOfExperience": "4",
+      "avatarUrl": "https://cdn.vectorstock.com/i/1000v/01/69/businesswoman-character-avatar-icon-vector-12800169.jpg",
+      "backgroundUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjMgtVbpVsTCcz2l_CLTD3Dy1PCamEMLburQ&s",
+      "phone": "0345467777",
+      "content": "Với 4 năm kinh nghiệm trong ngành sức khỏe, tôi đã có nhiều kinh nghiệm trong hỗ trợ các bệnh nhân gặp nhiều khúc mắc trong cuộc sống."
+    }
+  },
+  {
+    "id": "1a6f5b2f-6e14-4e18-8a51-bb63cb740011",
+    "firstName": "Tran",
+    "lastName": "Thi B",
+    "username": "tranthib",
+    "email": "tranthib@example.com",
+    "enabled": true,
+    "emailVerified": true,
+    "credentials": [
+      {
+        "type": "password",
+        "value": "tranthib",
+        "temporary": false
+      }
+    ],
+    "metadata": {
+      "avatarUrl": "https://cdn.vectorstock.com/i/1000v/60/95/avatar-woman-doctor-icon-vector-17046095.jpg",
+      "backgroundUrl": "https://www.shutterstock.com/image-vector/abstract-blue-background-banner-design-600nw-2070293614.jpg",
+      "phone": "0911222333",
+      "content": "Code là nỗi đau."
+    }
+  }
+]
