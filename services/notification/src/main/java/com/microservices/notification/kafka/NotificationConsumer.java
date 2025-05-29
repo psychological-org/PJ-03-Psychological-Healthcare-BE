@@ -46,6 +46,7 @@ public class NotificationConsumer {
         private final UserClient userClient;
         private final PostClient postClient;
         private final FcmTokenClient fcmTokenClient;
+        // private final PostClient postClient;
 
         @KafkaListener(topics = "comment-topic", groupId = "commentGroup")
         public void commentPostNotification(CommentNotification commentNotification,  @Header(value = "Authorization", required = false) String jwt) throws MessagingException {
@@ -272,6 +273,7 @@ public class NotificationConsumer {
                                                 log.error("Error sending push notification: {}", e.getMessage());
                                         }
                                 });
+
                         }
                 } catch (Exception e) {
                         log.error("Error processing post notification: {}", e.getMessage());

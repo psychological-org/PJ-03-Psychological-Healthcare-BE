@@ -201,6 +201,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(
                         String.format("Cannot find User:: No User found with the provided ID: %s",
                                 userId)));
+
         return user;
     }
 
