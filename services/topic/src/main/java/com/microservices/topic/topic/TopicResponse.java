@@ -4,6 +4,4 @@ public record TopicResponse(
                 Integer id,
                 String name,
                 String content,
-                String avatarUrl) {
-
-}
+                String avatarUrl ) {}

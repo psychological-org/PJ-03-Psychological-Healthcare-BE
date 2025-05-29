@@ -14,7 +14,7 @@ FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/target/notification*.jar app.jar
 
 EXPOSE 8000
 

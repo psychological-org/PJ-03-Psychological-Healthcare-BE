@@ -2,15 +2,9 @@ package com.microservices.follow.follow;
 
 import java.util.List;
 
+import com.microservices.follow.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +29,11 @@ public class FollowController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FollowResponse>> findAll() {
-        return ResponseEntity.ok(this.service.findAllFollows());
+    public ResponseEntity<PagedResponse<FollowResponse>> findAll(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(this.service.findAllFollows(page, limit));
     }
 
     @GetMapping("/exists/{follow-id}")
@@ -56,5 +53,27 @@ public class FollowController {
             @PathVariable("follow-id") Integer userId) {
         this.service.deleteFollow(userId);
         return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("friends/{user-id}")
+    public ResponseEntity<PagedResponse<FollowResponse>> findFriends(
+            @PathVariable("user-id") String userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit){
+        return ResponseEntity.ok(this.service.findAllFriendByUserId(userId, page, limit));
+    }
+
+    @GetMapping("/service/friends/{user-id}")
+    public ResponseEntity<List<FollowResponse>> findAllFriendByUserIdNotPaginate(
+            @PathVariable("user-id") String userId){
+        return ResponseEntity.ok(this.service.findAllFriendRequestByUserIdNotPaginate(userId));
+    }
+
+    @GetMapping("requests/{user-id}")
+    public ResponseEntity<PagedResponse<FollowResponse>> findFriendRequests(
+            @PathVariable("user-id") String userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit){
+        return ResponseEntity.ok(this.service.findAllFriendRequestByUserId(userId, page, limit));
     }
 }

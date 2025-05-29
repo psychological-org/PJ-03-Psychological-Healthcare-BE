@@ -7,6 +7,6 @@ public record PostResponse(
         String visibility,
         Integer reactCount,
         Integer communityId,
-        Integer userId) {
+        String userId) {
 
 }

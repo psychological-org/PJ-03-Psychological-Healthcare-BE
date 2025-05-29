@@ -29,6 +29,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   attendance-service:
     build:
@@ -40,6 +41,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   collection-service:
     build:
@@ -51,6 +53,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   comment-service:
     build:
@@ -62,6 +65,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   community-service:
     build:
@@ -73,6 +77,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   follow-service:
     build:
@@ -84,6 +89,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   gateway-service:
     build:
@@ -95,6 +101,10 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
+    environment:
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-services/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/micro-services
 
   message-service:
     build:
@@ -106,6 +116,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   notification-service:
     build:
@@ -117,6 +128,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   post-service:
     build:
@@ -128,6 +140,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   topic-service:
     build:
@@ -139,6 +152,7 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
   user-service:
     build:
@@ -150,7 +164,22 @@ services:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:
       - config-server
+      - discovery-service
 
+  recommended-service:
+    build:
+      context: ./recommended
+    container_name: recommended-service
+    ports:
+      - "8120:8120"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+    environment:
+    - HF_TOKEN=${HF_TOKEN}
+    - GEMINI_API_KEY=${GEMINI_API_KEY}
 
 networks:
   pj-03-psychological-healthcare-be_microservices-net:

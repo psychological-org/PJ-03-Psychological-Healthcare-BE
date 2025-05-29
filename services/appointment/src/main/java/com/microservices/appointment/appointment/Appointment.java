@@ -1,13 +1,17 @@
 package com.microservices.appointment.appointment;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,17 +19,27 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@Table(name = "appointment")
 public class Appointment {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String status;
-    private String appointmentDate;
-    private String appointmentTime;
+    private LocalDate appointmentDate;
+    private LocalTime appointmentTime;
     private Double rating;
+    private String review;
 
-    private Integer patientId;
-    private Integer doctorId;
+    private String patientId;
+    private String doctorId;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
 
 }
