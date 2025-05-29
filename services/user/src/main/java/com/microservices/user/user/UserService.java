@@ -196,6 +196,15 @@ public class UserService {
         return user;
     }
 
+    public User findRawByUserId(String userId) {
+        User user = this.repo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format("Cannot find User:: No User found with the provided ID: %s",
+                                userId)));
+
+        return user;
+    }
+
     public UserResponse findById(String keycloakId) {
         logger.debug("⚡ Finding user by Keycloak ID: {}", keycloakId);
 

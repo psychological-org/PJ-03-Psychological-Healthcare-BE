@@ -36,6 +36,7 @@ public class FollowService {
             UserResponse sender;
             try {
                 sender = userClient.findById(request.senderId()).getBody();
+                System.out.println("Sender: " + sender);
                 if (sender == null) {
                     throw new UserNotFoundException(
                             String.format("Cannot create follow: No sender found with ID: %s", request.senderId()));
@@ -61,7 +62,7 @@ public class FollowService {
         } catch (UserNotFoundException e) {
             throw e; // preserve specific user error
         } catch (Exception e) {
-            throw new FollowNotFoundException("User service not available or returned error: " + e.getMessage());
+            throw new FollowNotFoundException("User service not available or returned error: " + e);
         }
     }
 

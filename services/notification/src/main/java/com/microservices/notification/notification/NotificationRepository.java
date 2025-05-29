@@ -18,5 +18,8 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     // Delete document by id
     Optional<Notification> findByIdAndDeletedAtIsNull(String id);
 
+    @Query("{ 'deletedAt': null, 'name': ?0 }")
+    Notification findByNameAndDeletedAtIsNull(String name);
+
 }
 

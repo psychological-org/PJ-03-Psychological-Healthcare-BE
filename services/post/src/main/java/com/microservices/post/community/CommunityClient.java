@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "community-service", path = "/api/v1/communities")
+@FeignClient(name = "community-service", url="${application.config.community-url}")
 public interface CommunityClient {
     @GetMapping("/{community-id}")
     ResponseEntity<CommunityResponse> findById(@PathVariable("community-id") Integer userId);

@@ -19,9 +19,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     @Override
-    public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws") // endpoint để client kết nối
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // 1. raw WebSocket handshake tại /ws
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*");
+        // 2. SockJS-fallback (tuỳ nếu bạn còn cần client web dùng SockJS)
+        registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
+
 }
