@@ -11,6 +11,9 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
+    Page<Post> findByUserIdAndDeletedAtIsNull(String userId, Pageable pageable);
+    Page<Post> findByCommunityIdAndDeletedAtIsNull(Integer communityId, Pageable pageable);
+
     @Query("SELECT u FROM Post u WHERE u.id = :id AND u.deletedAt IS NULL")
     Optional<Post> findOneById(Integer id);
 

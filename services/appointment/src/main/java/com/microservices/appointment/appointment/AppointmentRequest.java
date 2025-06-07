@@ -11,6 +11,7 @@ public record AppointmentRequest(
         Double rating,
         String review,
         String patientId,
-        String doctorId) {
+        String doctorId,
+        String note) {
 
 }

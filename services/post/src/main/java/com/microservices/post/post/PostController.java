@@ -52,4 +52,20 @@ public class PostController {
         this.service.deletePost(userId);
         return ResponseEntity.accepted().build();
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<PagedResponse<PostResponse>> findByUserId(
+            @PathVariable("userId") String userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return ResponseEntity.ok(this.service.findPostsByUserId(userId, page, limit));
+    }
+
+    @GetMapping("/community/{communityId}")
+    public ResponseEntity<PagedResponse<PostResponse>> findByCommunityId(
+            @PathVariable("communityId") Integer communityId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return ResponseEntity.ok(this.service.findPostsByCommunityId(communityId, page, limit));
+    }
 }

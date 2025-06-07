@@ -7,7 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 public interface LikePostRepository extends JpaRepository<LikePost, Integer> {
+    Optional<LikePost> findByPostIdAndUserIdAndDeletedAtIsNull(Integer postId, String userId);
+
     @Query("SELECT lp FROM LikePost lp WHERE lp.postId = :postId AND lp.deletedAt IS NULL")
     Page<LikePost> findAllByPostId(Integer postId, Pageable pageable);
 

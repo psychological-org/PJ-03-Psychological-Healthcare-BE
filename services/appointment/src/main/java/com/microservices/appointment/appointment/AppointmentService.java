@@ -94,6 +94,9 @@ public class AppointmentService {
             // UserResponse doctorResponse = doctorOptional.get();
             appointment.setDoctorId(request.doctorId());
         }
+        if (StringUtils.isNotBlank(request.note())) {
+            appointment.setNote(request.note());
+        }
     }
 
     public PagedResponse<AppointmentResponse> findAllAppointments(int page, int limit) {

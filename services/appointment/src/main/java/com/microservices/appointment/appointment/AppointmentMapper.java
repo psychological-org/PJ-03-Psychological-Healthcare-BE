@@ -18,6 +18,7 @@ public class AppointmentMapper {
                 .review(request.review())
                 .patientId(request.patientId())
                 .doctorId(request.doctorId())
+                .note(request.note())
                 .build();
     }
 
@@ -33,7 +34,8 @@ public class AppointmentMapper {
                 appointment.getRating(),
                 appointment.getReview(),
                 appointment.getPatientId(),
-                appointment.getDoctorId());
+                appointment.getDoctorId(),
+                appointment.getNote());
 
     }
 

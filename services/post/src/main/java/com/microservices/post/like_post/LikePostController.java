@@ -44,4 +44,11 @@ public class LikePostController {
         this.service.deleteLikePost(id);
         return ResponseEntity.accepted().build();
     }
+
+    @GetMapping("/{postId}/user/{userId}")
+    public ResponseEntity<Boolean> isPostLiked(
+            @PathVariable("postId") Integer postId,
+            @PathVariable("userId") String userId) {
+        return ResponseEntity.ok(this.service.isPostLiked(postId, userId));
+    }
 }
