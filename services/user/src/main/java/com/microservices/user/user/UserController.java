@@ -1,5 +1,6 @@
 package com.microservices.user.user;
 
+import com.microservices.user.exception.UserNotFoundException;
 import com.microservices.user.utils.PagedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -42,11 +43,15 @@ public class UserController {
     public ResponseEntity<UserResponse> findById(
             @PathVariable("user-id") String userId) {
         System.out.println("User ID: " + userId);
-        User user = this.service.findRawByUserId(userId);
-        return ResponseEntity.ok(this.service.findById(user.getKeycloakId()));
+        try {
+            User user = this.service.findRawByUserId(userId);
+            return ResponseEntity.ok(this.service.findById(user.getKeycloakId()));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.ok(this.service.findById(userId));
+        }
     }
 
-    @GetMapping("profile")
+    @GetMapping("/profile")
     public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal Jwt jwt) {
         String keycloakId = jwt.getClaim("sub");
         return ResponseEntity.ok(this.service.findById(keycloakId));
