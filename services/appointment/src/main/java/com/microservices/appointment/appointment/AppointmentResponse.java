@@ -11,4 +11,5 @@ public record AppointmentResponse(
         Double rating,
         String review,
         String patientId,
-        String doctorId)  {}
+        String doctorId,
+        String note)  {}

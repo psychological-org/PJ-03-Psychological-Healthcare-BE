@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/PJ-03-Psychological-Healthcare-BE.iml" filepath="$PROJECT_DIR$/.idea/PJ-03-Psychological-Healthcare-BE.iml" />
-      <module fileurl="file://$PROJECT_DIR$/services/collection/collection.iml" filepath="$PROJECT_DIR$/services/collection/collection.iml" />
-      <module fileurl="file://$PROJECT_DIR$/services/post/post.iml" filepath="$PROJECT_DIR$/services/post/post.iml" />
     </modules>
   </component>
 </project>

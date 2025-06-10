@@ -2,6 +2,7 @@ package com.microservices.post.like_post;
 
 import com.microservices.post.exception.PostNotFoundException;
 import com.microservices.post.post.Post;
+import com.microservices.post.post.PostRepository;
 import com.microservices.post.post.PostResponse;
 import com.microservices.post.utils.PagedResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class LikePostService {
     private final LikePostRepository likePostRepository;
     private final LikePostMapper likePostMapper;
+    private final PostRepository postRepository;
 
     public Integer createLikePost(LikePostRequest likePostRequest) {
         LikePost likePost = likePostMapper.toListPost(likePostRequest);
@@ -63,6 +65,17 @@ public class LikePostService {
             throw new PostNotFoundException("LikePost not found with ID: " + id);
         }
         likePostRepository.softDeleteById(id);
+    }
+
+    public boolean isPostLiked(Integer postId, String userId) {
+        return likePostRepository.findByPostIdAndUserIdAndDeletedAtIsNull(postId, userId).isPresent();
+    }
+
+    private void updatePostReactCount(Integer postId, int delta) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found with ID: " + postId));
+        post.setReactCount(post.getReactCount() + delta);
+        postRepository.save(post);
     }
 
 }

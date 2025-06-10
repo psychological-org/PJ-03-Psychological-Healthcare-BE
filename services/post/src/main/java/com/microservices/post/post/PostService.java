@@ -16,12 +16,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.microservices.post.exception.PostNotFoundException;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
 
 @Service
 @RequiredArgsConstructor
@@ -34,36 +37,33 @@ public class PostService {
     private final PostProducer postProducer;
 
     public Integer createPost(PostRequest request) {
+        log.info("Processing createPost for userId: {}, communityId: {}",
+                request.userId(), request.communityId());
+        log.info("Current authentication: {}",
+                SecurityContextHolder.getContext().getAuthentication());
         try {
             // Kiểm tra user tồn tại (không dùng biến user)
-            try {
-                var userResponse = userClient.findById(request.userId());
-                if (userResponse == null || userResponse.getBody() == null) {
-                    throw new UserNotFoundException("User not found with ID: " + request.userId());
-                }
-            } catch (FeignException.NotFound e) {
+            var userResponse = userClient.findById(request.userId());
+            if (userResponse == null || userResponse.getBody() == null) {
                 throw new UserNotFoundException("User not found with ID: " + request.userId());
             }
 
             // Kiểm tra community tồn tại (không dùng biến community)
-            try {
-                var communityResponse = communityClient.findById(request.communityId());
-                if (communityResponse == null || communityResponse.getBody() == null) {
-                    throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
-                }
-            } catch (FeignException.NotFound e) {
+            var communityResponse = communityClient.findById(request.communityId());
+            if (communityResponse == null || communityResponse.getBody() == null) {
                 throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
             }
 
             var post = this.repository.save(mapper.toPost(request));
             postProducer.sendNotificationOfNewPost(mapper.fromPost(post));
-
             return post.getId();
 
-        } catch (UserNotFoundException | CommunityNotFoundException e) {
-            throw e; // Re-throw nếu là lỗi người dùng hoặc cộng đồng không tìm thấy
+        } catch (FeignException.Unauthorized e) {
+            throw new RuntimeException("Unauthorized access to community service: " + e.getMessage(), e);
+        } catch (FeignException.NotFound e) {
+            throw new CommunityNotFoundException("Community not found with ID: " + request.communityId());
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while creating the post: " + e.getMessage(), e);
+            throw new RuntimeException("Error creating post: " + e.getMessage(), e);
         }
     }
 
@@ -167,5 +167,41 @@ public class PostService {
 
     public void deletePost(Integer id) {
         this.repository.softDeleteById(id);
+    }
+
+    public PagedResponse<PostResponse> findPostsByUserId(String userId, int page, int limit) {
+        try {
+            ResponseEntity<UserResponse> userResponse = userClient.findById(userId);
+            if (userResponse == null || userResponse.getBody() == null) {
+                throw new UserNotFoundException("User not found with ID: " + userId);
+            }
+
+            Pageable pageable = PageRequest.of(page, limit);
+            Page<Post> postPage = repository.findByUserIdAndDeletedAtIsNull(userId, pageable);
+            List<PostResponse> responses = postPage.getContent().stream()
+                    .map(mapper::fromPost)
+                    .collect(Collectors.toList());
+            return new PagedResponse<>(responses, postPage.getTotalPages(), postPage.getTotalElements());
+        } catch (FeignException e) {
+            throw new UserNotFoundException("User service not available or returned error: " + e.getMessage());
+        }
+    }
+
+    public PagedResponse<PostResponse> findPostsByCommunityId(Integer communityId, int page, int limit) {
+        try {
+            ResponseEntity<CommunityResponse> communityResponse = communityClient.findById(communityId);
+            if (communityResponse == null || communityResponse.getBody() == null) {
+                throw new CommunityNotFoundException("Community not found with ID: " + communityId);
+            }
+
+            Pageable pageable = PageRequest.of(page, limit);
+            Page<Post> postPage = repository.findByCommunityIdAndDeletedAtIsNull(communityId, pageable);
+            List<PostResponse> responses = postPage.getContent().stream()
+                    .map(mapper::fromPost)
+                    .collect(Collectors.toList());
+            return new PagedResponse<>(responses, postPage.getTotalPages(), postPage.getTotalElements());
+        } catch (FeignException e) {
+            throw new CommunityNotFoundException("Community service not available or returned error: " + e.getMessage());
+        }
     }
 }

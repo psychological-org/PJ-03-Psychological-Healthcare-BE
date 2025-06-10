@@ -48,7 +48,7 @@ services:
       context: ./collection
     container_name: collection-service
     ports:
-      - "8020:8020"
+      - "8021:8020"
     networks:
       - pj-03-psychological-healthcare-be_microservices-net
     depends_on:

@@ -33,6 +33,7 @@ public class Appointment {
 
     private String patientId;
     private String doctorId;
+    private String note;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

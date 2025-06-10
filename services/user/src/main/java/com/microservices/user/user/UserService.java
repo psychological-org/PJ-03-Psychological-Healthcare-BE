@@ -2,9 +2,13 @@ package com.microservices.user.user;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -153,10 +157,15 @@ public class UserService {
 
         List<UserResponse> dtos = kcUsers.stream().map(u -> {
             // Lấy danh sách roles từ Keycloak user
-            List<String> roles = u.getRealmRoles();
+            UserResource userResource = realmResource().users().get(u.getId());
 
-            // Ưu tiên lấy role: admin > doctor > patient
-            String role = roles.stream()
+            List<RoleRepresentation> realmRoles = userResource.roles().realmLevel().listAll();
+
+            List<String> roleNames = realmRoles.stream()
+                    .map(RoleRepresentation::getName)
+                    .collect(Collectors.toList());
+
+            String role = roleNames.stream()
                     .filter(r -> List.of("admin", "doctor", "patient").contains(r))
                     .findFirst()
                     .orElse(null);
@@ -168,15 +177,16 @@ public class UserService {
             if (fullName.isEmpty())
                 fullName = null;
 
-            User user = findRawByKeycloakId(u.getId());
+            User user = repo.findByKeycloakId(u.getId()).orElse(null);
 
             // Ánh xạ thành UserResponse
             UserResponse resp = mapper.coreToResponse(
-                    user.getId(),
+                    user != null ? user.getId() : null,
                     u.getUsername(),
                     u.getEmail(),
                     fullName,
-                    role);
+                    role
+            );
 
             // Gộp dữ liệu profile từ MongoDB nếu có
             return repo.findByKeycloakId(u.getId())
