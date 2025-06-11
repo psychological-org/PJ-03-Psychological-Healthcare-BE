@@ -79,7 +79,7 @@ public class ParticipantCommunityService {
 
     public ParticipantCommunityResponse findById(Integer id) {
         return this.participantCommunityRepository.findOneById(id)
-                .map(participantCommunityMapper::fromParticipantCommunityResponse)
+                .map(participantCommunity -> participantCommunityMapper.fromParticipantCommunityResponse(participantCommunity, userClient))
                 .orElseThrow(() -> new ParticipantCommunityNotFoundException(
                         String.format("No participant community found with the provided ID: %s", id)));
     }
@@ -105,7 +105,7 @@ public class ParticipantCommunityService {
         }
         List<ParticipantCommunityResponse> appointmentResponses = appointments.getContent()
                 .stream()
-                .map(this.participantCommunityMapper::fromParticipantCommunityResponse)
+                .map(participantCommunity -> participantCommunityMapper.fromParticipantCommunityResponse(participantCommunity, userClient))
                 .collect(Collectors.toList());
         return new PagedResponse<>(appointmentResponses, appointments.getTotalPages(), appointments.getTotalElements());
     }
@@ -119,7 +119,7 @@ public class ParticipantCommunityService {
         }
         List<ParticipantCommunityResponse> appointmentResponses = appointments.getContent()
                 .stream()
-                .map(this.participantCommunityMapper::fromParticipantCommunityResponse)
+                .map(participantCommunity -> participantCommunityMapper.fromParticipantCommunityResponse(participantCommunity, userClient))
                 .collect(Collectors.toList());
         return new PagedResponse<>(appointmentResponses, appointments.getTotalPages(), appointments.getTotalElements());
     }
@@ -133,7 +133,7 @@ public class ParticipantCommunityService {
         }
         List<ParticipantCommunityResponse> appointmentResponses = appointments.getContent()
                 .stream()
-                .map(this.participantCommunityMapper::fromParticipantCommunityResponse)
+                .map(participantCommunity -> participantCommunityMapper.fromParticipantCommunityResponse(participantCommunity, userClient))
                 .collect(Collectors.toList());
         return new PagedResponse<>(appointmentResponses, appointments.getTotalPages(), appointments.getTotalElements());
     }

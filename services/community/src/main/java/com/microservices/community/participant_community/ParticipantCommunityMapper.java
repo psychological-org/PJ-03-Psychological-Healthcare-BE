@@ -1,5 +1,8 @@
 package com.microservices.community.participant_community;
 
+import com.microservices.community.user.UserClient;
+import com.microservices.community.user.UserResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,14 +18,17 @@ public class ParticipantCommunityMapper {
                 .build();
     }
 
-    public ParticipantCommunityResponse fromParticipantCommunityResponse(ParticipantCommunity participantCommunity) {
+    public ParticipantCommunityResponse fromParticipantCommunityResponse(ParticipantCommunity participantCommunity, UserClient userClient) {
         if (participantCommunity == null) {
             return null;
         }
+        ResponseEntity<UserResponse> userResponse = userClient.findById(participantCommunity.getUserId());
+        UserResponse user = (userResponse != null && userResponse.getBody() != null) ? userResponse.getBody() : null;
         return new ParticipantCommunityResponse(
                 participantCommunity.getId(),
                 participantCommunity.getUserId(),
-                participantCommunity.getCommunityId()
+                participantCommunity.getCommunityId(),
+                user
         );
     }
 }

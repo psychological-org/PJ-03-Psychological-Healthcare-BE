@@ -29,7 +29,8 @@ public class CommentMapper {
                 comment.getImageUrl(),
                 comment.getUserId(),
                 comment.getPostId(),
-                comment.getReactCount());
+                comment.getReactCount(),
+                comment.getCreatedAt());
     }
 
 }

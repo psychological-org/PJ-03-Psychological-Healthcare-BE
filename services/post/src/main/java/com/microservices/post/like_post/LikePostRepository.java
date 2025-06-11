@@ -1,5 +1,6 @@
 package com.microservices.post.like_post;
 
+import feign.Param;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,4 +29,7 @@ public interface LikePostRepository extends JpaRepository<LikePost, Integer> {
     @Transactional
     @Query("UPDATE LikePost lp SET lp.deletedAt = CURRENT_TIMESTAMP WHERE lp.id = :id")
     void softDeleteById(Integer id);
+
+    @Query("SELECT COUNT(*) > 0 FROM LikePost lp WHERE lp.postId = :postId AND lp.userId = :userId AND lp.deletedAt IS NULL")
+    boolean existsByPostIdAndUserId(@Param("postId") Integer postId, @Param("userId") String userId);
 }

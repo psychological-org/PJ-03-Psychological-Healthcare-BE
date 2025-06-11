@@ -1,5 +1,7 @@
 package com.microservices.post.post;
 
+import java.time.LocalDateTime;
+
 public record PostResponse(
         Integer id,
         String content,
@@ -7,6 +9,7 @@ public record PostResponse(
         String visibility,
         Integer reactCount,
         Integer communityId,
-        String userId) {
+        String userId,
+        LocalDateTime createdAt) {
 
 }
