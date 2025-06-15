@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -18,9 +21,12 @@ public class UserController {
     private final UserService service;
 
     @PostMapping
-    public ResponseEntity<String> createUser(
+    public ResponseEntity<Map<String, String>> createUser(
             @RequestBody @Valid UserRequest request) {
-        return ResponseEntity.ok(this.service.createUser(request));
+        String userId = this.service.createUser(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("id", userId);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping

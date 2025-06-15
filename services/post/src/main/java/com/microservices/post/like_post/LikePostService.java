@@ -22,9 +22,26 @@ public class LikePostService {
     private final PostRepository postRepository;
 
     public Integer createLikePost(LikePostRequest likePostRequest) {
-        LikePost likePost = likePostMapper.toListPost(likePostRequest);
-        LikePost savedLikePost = likePostRepository.save(likePost);
-        return likePostMapper.fromLikePost(savedLikePost).id();
+        Post post = postRepository.findById(likePostRequest.postId())
+                .orElseThrow(() -> new RuntimeException("Post not found: " + likePostRequest.postId()));
+
+        // Kiểm tra người dùng chưa like
+        if (likePostRepository.existsByPostIdAndUserId(likePostRequest.postId(), likePostRequest.userId())) {
+            throw new RuntimeException("User " + likePostRequest.userId() + " already liked post " + likePostRequest.postId());
+        }
+
+        // Tạo LikePost
+        LikePost likePost = LikePost.builder()
+                .postId(likePostRequest.postId())
+                .userId(likePostRequest.userId())
+                .build();
+        likePost = likePostRepository.save(likePost);
+
+        // Tăng reactCount
+        post.setReactCount(post.getReactCount() + 1);
+        postRepository.save(post);
+
+        return likePost.getId();
     }
 
     public PagedResponse<LikePostResponse> getLikePostById(Integer id, Integer page, Integer limit) {
@@ -62,8 +79,16 @@ public class LikePostService {
     public void deleteLikePost(Integer id) {
         LikePost likePost = likePostRepository.findOneById(id);
         if (likePost == null) {
-            throw new PostNotFoundException("LikePost not found with ID: " + id);
+            throw new RuntimeException("LikePost not found or already deleted: " + id);
         }
+
+        // Giảm reactCount
+        Post post = postRepository.findById(likePost.getPostId())
+                .orElseThrow(() -> new RuntimeException("Post not found: " + likePost.getPostId()));
+        post.setReactCount(Math.max(0, post.getReactCount() - 1));
+        postRepository.save(post);
+
+        // Xóa mềm LikePost
         likePostRepository.softDeleteById(id);
     }
 

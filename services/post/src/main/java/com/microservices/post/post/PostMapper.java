@@ -31,7 +31,8 @@ public class PostMapper {
                 post.getVisibility(),
                 post.getReactCount(),
                 post.getCommunityId(),
-                post.getUserId());
+                post.getUserId(),
+                post.getCreatedAt());
 
     }
 

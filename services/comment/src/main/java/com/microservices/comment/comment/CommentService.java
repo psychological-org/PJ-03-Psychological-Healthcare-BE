@@ -55,7 +55,8 @@ public class CommentService {
                     comment.getImageUrl(),
                     response.getBody().fullName(),
                     comment.getPostId(),
-                    comment.getReactCount()
+                    comment.getReactCount(),
+                    comment.getCreatedAt()
             );
             // Send follow event to Kafka
             commentProducer.sendNotificationOfNewCommentToPost(mapper.fromComment(comment));
