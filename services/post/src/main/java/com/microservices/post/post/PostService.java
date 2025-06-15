@@ -15,6 +15,7 @@ import feign.FeignException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -141,16 +142,16 @@ public class PostService {
     }
 
     public PagedResponse<PostResponse> findAllPosts(int page, int limit) {
-        Pageable pageable = PageRequest.of(page, limit);
-        Page<Post> appointments = this.repository.findAll(pageable);
-        if (appointments.getContent().isEmpty()) {
+        Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> posts = this.repository.findAllUsers(pageable);
+        if (posts.getContent().isEmpty()) {
             throw new PostNotFoundException("No post found");
         }
-        List<PostResponse> appointmentResponses = appointments.getContent()
+        List<PostResponse> postResponses = posts.getContent()
                 .stream()
                 .map(this.mapper::fromPost)
                 .collect(Collectors.toList());
-        return new PagedResponse<>(appointmentResponses, appointments.getTotalPages(), appointments.getTotalElements());
+        return new PagedResponse<>(postResponses, posts.getTotalPages(), posts.getTotalElements());
     }
 
     public PostResponse findById(Integer id) {
