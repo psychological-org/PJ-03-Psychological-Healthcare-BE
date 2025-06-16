@@ -1,12 +1,11 @@
 package com.microservices.notification.firebase;
 
-import com.google.firebase.messaging.AndroidConfig;
-import com.google.firebase.messaging.AndroidNotification;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.*;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
 
 @Service
 public class FcmPushService {
@@ -20,19 +19,38 @@ public class FcmPushService {
     /**
      * Gửi notification đơn giản tới 1 device token
      */
-    public String sendToToken(String deviceToken, String title, String body) throws Exception {
-        Message msg = Message.builder()
-                .setToken(deviceToken)
-                .setAndroidConfig(AndroidConfig.builder()
-                        .setNotification(AndroidNotification.builder()
-                                .setTitle(title)
-                                .setBody(body)
-                                .build())
+    public String sendToToken(String token, String title, String body, Integer appointmentId) throws FirebaseMessagingException {
+        Message.Builder messageBuilder = Message.builder()
+                .setToken(token)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build());
+
+        if (appointmentId != null) {
+            messageBuilder.putData("appointment_id", String.valueOf(appointmentId));
+        }
+
+        Message message = messageBuilder.build();
+        String response = messaging.send(message);
+        log.info("FCM message sent to token {}: {}", token, response);
+        return response;
+        // gửi synchronous
+//        return messaging.send(msg);
+    }
+
+    public String sendToToken(String token, String title, String body) throws FirebaseMessagingException {
+        Message message = Message.builder()
+                .setToken(token)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
                         .build())
                 .build();
 
-        // gửi synchronous
-        return messaging.send(msg);
+        String response = messaging.send(message);
+        log.info("FCM message sent to token {}: {}", token, response);
+        return response;
     }
 
     /**
@@ -44,5 +62,19 @@ public class FcmPushService {
                 .putAllData(data)
                 .build();
         return messaging.send(msg);
+    }
+
+    public String sendToTokenWithData(String token, String title, String body, Map<String, String> data) throws FirebaseMessagingException {
+        Message message = Message.builder()
+                .setToken(token)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .putAllData(data)
+                .build();
+        String response = messaging.send(message);
+        log.info("FCM message with notification and data sent to token {}: {}", token, response);
+        return response;
     }
 }

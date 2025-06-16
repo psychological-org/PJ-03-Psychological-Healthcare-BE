@@ -1,9 +1,11 @@
 package com.microservices.notification.kafka;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.microservices.notification.email.EmailService;
 import com.microservices.notification.exception.NotificationNotFoundException;
 import com.microservices.notification.fcm_token.FcmTokenClient;
 import com.microservices.notification.fcm_token.FcmTokenResponse;
+import com.microservices.notification.firebase.FcmPushService;
 import com.microservices.notification.follow.FollowClient;
 import com.microservices.notification.follow.FollowResponse;
 import com.microservices.notification.kafka.appointment.AppointmentNotification;
@@ -22,6 +24,7 @@ import com.microservices.notification.user_notification.UserNotificationRequest;
 import com.microservices.notification.user_notification.UserNotificationService;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -31,7 +34,9 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +51,7 @@ public class NotificationConsumer {
         private final UserClient userClient;
         private final PostClient postClient;
         private final FcmTokenClient fcmTokenClient;
+        private final FcmPushService fcmPushService;
         // private final PostClient postClient;
 
         @KafkaListener(topics = "comment-topic", groupId = "commentGroup")
@@ -171,35 +177,130 @@ public class NotificationConsumer {
 
         @KafkaListener(topics = "appointment-topic", groupId = "appointmentGroup")
         public void consumerAppointmentNotification(AppointmentNotification notification) throws MessagingException {
-                log.info("Consuming the message from appointment-topic Topic:: {}", notification.toString());
+                log.info("Consuming message from appointment-topic: {}", notification.toString());
                 try {
-//                        NotificationRequest request = new NotificationRequest(null, "Thông báo xác nhận đặt lịch",
-//                                        NotificationType.APPOINTMENT_NOTIFICATION);
-//                        String notificationResponse = notificationService.createNotification(request);
-
+                        // Tạo hoặc lấy template thông báo
                         final String templateName = "Thông báo xác nhận đặt lịch";
                         NotificationResponse notificationResponse;
                         try {
-                                // Thử lấy template, nếu không tìm thấy thì ném NotificationNotFoundException
                                 notificationResponse = notificationService.findNotificationByName(templateName);
+                                log.info("Found notification template: {}", notificationResponse);
                         } catch (NotificationNotFoundException notFound) {
+                                log.warn("Notification template not found, creating new one: {}", templateName);
                                 NotificationRequest newTemplate = new NotificationRequest(
-                                        null,
-                                        templateName,
-                                        NotificationType.FOLLOW_NOTIFICATION
-                                );
+                                        null, templateName, NotificationType.APPOINTMENT_NOTIFICATION);
                                 String newId = notificationService.createNotification(newTemplate);
                                 notificationResponse = notificationService.findOneById(newId);
+                                log.info("Created new notification template: {}", notificationResponse);
                         }
 
-                        UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
-                                        notification.patientId(), notificationResponse.id(), "Thông báo xác nhận đặt lịch",
-                                        false);
-                        userNotificationService.createUserNotification(userNotificationRequest);
+                        // Tạo UserNotification cho bệnh nhân khi lịch hẹn mới
+                        if ("pending".equals(notification.status())) {
+                                UserNotificationRequest userNotificationRequest = new UserNotificationRequest(
+                                        null, notification.patientId(), notificationResponse.id(),
+                                        "Thông báo xác nhận đặt lịch", false);
+                                String userNotificationId = userNotificationService.createUserNotification(userNotificationRequest);
+                                log.info("Created user notification with ID: {}", userNotificationId);
 
-                        emailService.sendSuccessfulAppointmentConfirmation(notification);
+                                // Gửi email xác nhận đến bệnh nhân
+                                emailService.sendSuccessfulAppointmentConfirmation(notification);
+                                log.info("Sent email confirmation for appointment: {}", notification);
+                        }
+
+                        // Lấy tên bệnh nhân
+                        String patientName = "Bệnh nhân không xác định";
+                        try {
+                                ResponseEntity<UserResponse> userResponse = userClient.findById(notification.patientId());
+                                UserResponse user = userResponse.getBody();
+                                if (user != null && user.fullName() != null) {
+                                        patientName = user.fullName();
+                                } else {
+                                        log.warn("No fullName found for patientId: {}", notification.patientId());
+                                }
+                        } catch (Exception e) {
+                                log.error("Failed to fetch patient name for patientId {}: {}", notification.patientId(), e.getMessage(), e);
+                        }
+
+                        // Gửi thông báo đẩy dựa trên trạng thái lịch hẹn
+                        record NotificationInfo(String title, String body, String targetUserId, String role) {}
+                        List<NotificationInfo> notifications = switch (notification.status()) {
+                                case "pending" -> List.of(
+                                        new NotificationInfo(
+                                                "Lịch hẹn mới",
+                                                String.format("Bệnh nhân %s đã đặt lịch vào %s lúc %s. Vui lòng xác nhận hoặc từ chối.",
+                                                        patientName, notification.appointmentDate(), notification.appointmentTime()),
+                                                notification.doctorId(),
+                                                "doctor"
+                                        )
+                                );
+                                case "confirmed" -> List.of(
+                                        new NotificationInfo(
+                                                "Xác nhận lịch hẹn",
+                                                String.format("Bạn đã xác nhận lịch hẹn với bệnh nhân %s vào %s lúc %s.",
+                                                        patientName, notification.appointmentDate(), notification.appointmentTime()),
+                                                notification.doctorId(),
+                                                "doctor"
+                                        ),
+                                        new NotificationInfo(
+                                                "Lịch hẹn của bạn được xác nhận",
+                                                String.format("Lịch hẹn của bạn vào %s lúc %s với bác sĩ đã được xác nhận. Vui lòng đến đúng giờ.",
+                                                        notification.appointmentDate(), notification.appointmentTime()),
+                                                notification.patientId(),
+                                                "patient"
+                                        )
+                                );
+                                case "cancelled" -> List.of(
+                                        new NotificationInfo(
+                                                "Từ chối lịch hẹn",
+                                                String.format("Bạn đã từ chối lịch hẹn của bệnh nhân %s vào %s lúc %s.",
+                                                        patientName, notification.appointmentDate(), notification.appointmentTime()),
+                                                notification.doctorId(),
+                                                "doctor"
+                                        ),
+                                        new NotificationInfo(
+                                                "Lịch hẹn của bạn bị từ chối",
+                                                String.format("Lịch hẹn của bạn vào %s lúc %s đã bị từ chối. Vui lòng đặt lịch khác.",
+                                                        notification.appointmentDate(), notification.appointmentTime()),
+                                                notification.patientId(),
+                                                "patient"
+                                        )
+                                );
+                                default -> {
+                                        log.warn("Unknown appointment status: {}", notification.status());
+                                        yield List.of();
+                                }
+                        };
+
+                        // Gửi thông báo đẩy
+                        for (NotificationInfo info : notifications) {
+                                log.info("Fetching FCM tokens for userId: {}, role: {}", info.targetUserId(), info.role());
+                                ResponseEntity<List<FcmTokenResponse>> response = fcmTokenClient.findByUserId(info.targetUserId());
+                                List<FcmTokenResponse> tokens = response.getBody();
+                                if (tokens != null && !tokens.isEmpty()) {
+                                        log.info("Found {} FCM tokens for userId: {}, role: {}", tokens.size(), info.targetUserId(), info.role());
+                                        for (FcmTokenResponse token : tokens) {
+                                                if (token.fcmToken() == null || token.fcmToken().isEmpty()) {
+                                                        log.warn("Invalid FCM token for userId {}: token is null or empty", info.targetUserId());
+                                                        continue;
+                                                }
+                                                log.info("Sending FCM notification to token: {}, title: {}, body: {}, role: {}, appointmentId: {}",
+                                                        token.fcmToken(), info.title(), info.body(), info.role(), notification.id());
+                                                try {
+                                                        String fcmResponse = notificationService.sendPushNotificationByFirebase(
+                                                                token.fcmToken(), info.title(), info.body(), notification.id(), info.role());
+                                                        log.info("FCM response: {}", fcmResponse);
+                                                } catch (RuntimeException e) {
+                                                        log.error("Failed to send FCM notification to userId {}, token {}, role {}: {}",
+                                                                info.targetUserId(), token.fcmToken(), info.role(), e.getMessage(), e);
+                                                }
+                                        }
+                                } else {
+                                        log.warn("No FCM tokens found for userId: {}, role: {}", info.targetUserId(), info.role());
+                                }
+                        }
                 } catch (RuntimeException e) {
-                        log.error("Error sending appointment confirmation email: {}", e.getMessage());
+                        log.error("Error processing appointment notification: {}", e.getMessage(), e);
+                        throw e;
                 }
         }
 

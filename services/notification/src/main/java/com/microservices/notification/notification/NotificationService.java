@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -47,14 +49,38 @@ public class NotificationService {
         return notificationMapper.fromNotification(notification);
     }
 
+    // Phiên bản cho thông báo lịch hẹn với cả notification và data payload
+    public String sendPushNotificationByFirebase(String token, String title, String body, Integer appointmentId, String role) {
+        try {
+            Map<String, String> data = new HashMap<>();
+            if (appointmentId != null) {
+                data.put("appointment_id", String.valueOf(appointmentId));
+            }
+            data.put("role", role);
+            String response = fcmPushService.sendToTokenWithData(token, title, body, data);
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
+        }
+    }
+
+    // Phiên bản cho thông báo lịch hẹn
+    public String sendPushNotificationByFirebase(String token, String title, String body, Integer appointmentId) {
+        try {
+            String response = fcmPushService.sendToToken(token, title, body, appointmentId);
+            return response;
+        } catch (FirebaseMessagingException e) {
+            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
+        }
+    }
+
+    // Phiên bản cho các thông báo khác
     public String sendPushNotificationByFirebase(String token, String title, String body) {
         try {
             String response = fcmPushService.sendToToken(token, title, body);
             return response;
         } catch (FirebaseMessagingException e) {
-            throw new RuntimeException("Failed to send notification: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
         }
     }
 
