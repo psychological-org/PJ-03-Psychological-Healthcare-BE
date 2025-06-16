@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
+
 @Service
 @RequiredArgsConstructor
 public class UserNotificationService {
@@ -34,12 +36,14 @@ public class UserNotificationService {
                             userNotificationRequest.userId()));
         }
         NotificationResponse notification = notificationService.findOneById(userNotificationRequest.notificationId());
+        log.info("Notification fetched for ID {}: {}", userNotificationRequest.notificationId(), notification);
         if (notification == null) {
             throw new NotificationNotFoundException(
                     String.format("Notification not found with ID: %s", userNotificationRequest.notificationId()));
         }
         UserNotification userNotification = userNotificationMapper.toUserNotification(userNotificationRequest);
         UserNotification savedUserNotification = userNotificationRepository.save(userNotification);
+        log.info("Saved UserNotification: {}", savedUserNotification);
         return userNotificationMapper.fromUserNotification(savedUserNotification).id();
     }
 

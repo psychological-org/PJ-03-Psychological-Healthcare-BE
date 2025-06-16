@@ -79,9 +79,7 @@ public class NotificationService {
             String response = fcmPushService.sendToToken(token, title, body);
             return response;
         } catch (FirebaseMessagingException e) {
-            throw new RuntimeException("Failed to send notification: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
         }
     }
 

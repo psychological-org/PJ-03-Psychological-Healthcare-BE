@@ -1,9 +1,11 @@
 package com.microservices.notification.kafka;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.microservices.notification.email.EmailService;
 import com.microservices.notification.exception.NotificationNotFoundException;
 import com.microservices.notification.fcm_token.FcmTokenClient;
 import com.microservices.notification.fcm_token.FcmTokenResponse;
+import com.microservices.notification.firebase.FcmPushService;
 import com.microservices.notification.follow.FollowClient;
 import com.microservices.notification.follow.FollowResponse;
 import com.microservices.notification.jwt.JwtService;
@@ -33,7 +35,9 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +53,7 @@ public class NotificationConsumer {
         private final PostClient postClient;
         private final FcmTokenClient fcmTokenClient;
         private final JwtService jwtService;
+        private final FcmPushService fcmPushService;
         // private final PostClient postClient;
 
         @KafkaListener(topics = "comment-topic", groupId = "commentGroup")
