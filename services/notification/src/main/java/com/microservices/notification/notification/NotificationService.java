@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +47,31 @@ public class NotificationService {
             throw new NotificationNotFoundException("Notification not found");
         }
         return notificationMapper.fromNotification(notification);
+    }
+
+    // Phiên bản cho thông báo lịch hẹn với cả notification và data payload
+    public String sendPushNotificationByFirebase(String token, String title, String body, Integer appointmentId, String role) {
+        try {
+            Map<String, String> data = new HashMap<>();
+            if (appointmentId != null) {
+                data.put("appointment_id", String.valueOf(appointmentId));
+            }
+            data.put("role", role);
+            String response = fcmPushService.sendToTokenWithData(token, title, body, data);
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
+        }
+    }
+
+    // Phiên bản cho thông báo lịch hẹn
+    public String sendPushNotificationByFirebase(String token, String title, String body, Integer appointmentId) {
+        try {
+            String response = fcmPushService.sendToToken(token, title, body, appointmentId);
+            return response;
+        } catch (FirebaseMessagingException e) {
+            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
+        }
     }
 
     public String sendPushNotificationByFirebase(String token, String title, String body) {

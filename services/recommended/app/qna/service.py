@@ -31,11 +31,11 @@ async def ask_gemini(negative_level:float) -> AnswerResponse:
     4. **Kết thúc** bằng một câu khẳng định nâng đỡ tinh thần.
 
     # Expected Response (mẫu rút gọn)
-    – Empathetic tone… – một đoạn ngắn theo cấu trúc trên.
-    - Đối với mức độ tiêu cực cao, bạn khuyến khích ngưới dùng tìm chuyên gia tâm lý thay vì nói là bác sĩ tâm thần
+    – Empathetic tone.
     - Loại bỏ ký tự không cần thiết và viết hoa chữ cái đầu câu.
-    - Không đánh dấu markdown, không đánh dấu **bold**
-    - Viết một đoạn văn liền mạch, tối đa 3–4 đoạn.
+    - Không đánh dấu markdown, không đánh dấu **bold**, không in nghiêng text.
+    - Viết 1 quote cổ đông, sau đó là 3-4 đoạn liền mạch theo cấu trúc trên, tối đa 50 từ trong mỗi đoạn.
+    - Đối với mức độ tiêu cực cao, thêm 1 đoạn ở cuối cùng khuyến khích ngưới dùng tìm chuyên gia tâm lý thay vì nói là bác sĩ tâm thần 
     """
     body = {
         "contents": [

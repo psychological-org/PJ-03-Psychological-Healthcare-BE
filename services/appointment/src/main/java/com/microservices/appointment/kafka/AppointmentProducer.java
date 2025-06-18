@@ -19,11 +19,13 @@ import static org.springframework.kafka.support.KafkaHeaders.TOPIC;
 public class AppointmentProducer {
     private final KafkaTemplate<String, AppointmentResponse> kafkaTemplate;
 
-    public void sendAppointmentConfirmationEmail(AppointmentResponse appointmentResponse) {
-        log.info("Producing the message to appointment-topic Topic:: %s", appointmentResponse);
+    public void sendAppointmentConfirmationEmail(AppointmentResponse appointmentResponse, String token) {
+        log.info("Producing the message to appointment-topic Topic:: {}", appointmentResponse);
+        log.info("Authorization token: {}", token);
         Message<AppointmentResponse> message = MessageBuilder
                 .withPayload(appointmentResponse)
                 .setHeader(TOPIC, "appointment-topic")
+                .setHeader("Authorization", "Bearer " + token)
                 .build();
         kafkaTemplate.send(message);
     }

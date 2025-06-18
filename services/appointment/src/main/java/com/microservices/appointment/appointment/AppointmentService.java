@@ -29,23 +29,20 @@ public class AppointmentService {
     private final UserClient userClient;
     private final AppointmentProducer appointmentProducer;
 
-    public Integer createAppointment(AppointmentRequest request) {
+    public Integer createAppointment(AppointmentRequest request, String token) {
         try {
             Optional<UserResponse> doctorOptional = userClient.findUserById(request.doctorId());
             if (doctorOptional.isEmpty())
                 throw new UserNotFoundException("Doctor not found with ID: " + request.doctorId());
-            // UserResponse doctorResponse = doctorOptional.get();
 
             Optional<UserResponse> patientOptional = userClient.findUserById(request.patientId());
             if (patientOptional.isEmpty())
                 throw new UserNotFoundException("Patient not found with ID: " + request.patientId());
-            // UserResponse patientResponse = patientOptional.get();
 
             var appointment = this.repository.save(mapper.toAppointment(request));
-            appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment));
+            appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment), token);
 
             return appointment.getId();
-
         } catch (FeignException e) {
             throw new UserNotFoundException("User service not available or returned error: " + e.getMessage());
         } catch (Exception e) {
@@ -53,14 +50,13 @@ public class AppointmentService {
         }
     }
 
-
-    public void updateAppointment(AppointmentRequest request) {
+    public void updateAppointment(AppointmentRequest request, String token) {
         var appointment = this.repository.findOneById(request.id())
                 .orElseThrow(() -> new AppointmentNotFoundException(
                         String.format("Cannot update appointment:: No appointment found with the provided ID: %s",
                                 request.id())));
         mergeAppointment(appointment, request);
-        appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment));
+        appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment), token);
         this.repository.save(appointment);
     }
 

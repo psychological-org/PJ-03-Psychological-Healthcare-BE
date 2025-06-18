@@ -19,14 +19,20 @@ public class AppointmentController {
 
     @PostMapping
     public ResponseEntity<Integer> createAppointment(
-            @RequestBody @Valid AppointmentRequest request) {
-        return ResponseEntity.ok(this.service.createAppointment(request));
+            @RequestBody @Valid AppointmentRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+        String token = authorizationHeader != null && authorizationHeader.startsWith("Bearer ")
+                ? authorizationHeader.replace("Bearer ", "") : null;
+        return ResponseEntity.ok(this.service.createAppointment(request, token));
     }
 
     @PutMapping
     public ResponseEntity<Void> updateAppointment(
-            @RequestBody @Valid AppointmentRequest request) {
-        this.service.updateAppointment(request);
+            @RequestBody @Valid AppointmentRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+        String token = authorizationHeader != null && authorizationHeader.startsWith("Bearer ")
+                ? authorizationHeader.replace("Bearer ", "") : null;
+        this.service.updateAppointment(request, token);
         return ResponseEntity.accepted().build();
     }
 
