@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
@@ -19,6 +20,9 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     @Query("SELECT u FROM Post u WHERE u.deletedAt IS NULL")
     public Page<Post> findAllUsers(Pageable pageable);
+
+    @Query("SELECT u FROM Post u WHERE u.communityId IN :communityIds AND u.deletedAt IS NULL")
+    Page<Post> findByCommunityIdsAndDeletedAtIsNull(List<Integer> communityIds, Pageable pageable);
 
     @Modifying
     @Transactional

@@ -4,6 +4,7 @@ import com.microservices.post.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -67,5 +68,13 @@ public class PostController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "limit", defaultValue = "10") int limit) {
         return ResponseEntity.ok(this.service.findPostsByCommunityId(communityId, page, limit));
+    }
+
+    @GetMapping("/by-community-ids")
+    public ResponseEntity<PagedResponse<PostResponse>> findByCommunityIds(
+            @RequestParam("communityIds") List<Integer> communityIds,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return ResponseEntity.ok(this.service.findPostsByCommunityIds(communityIds, page, limit));
     }
 }

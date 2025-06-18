@@ -16,7 +16,6 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
     @Query("SELECT u FROM Comment u WHERE u.deletedAt IS NULL")
     public Page<Comment> findAllComment(Pageable pageable);
 
-    // get comment by post id
     @Query("SELECT u FROM Comment u WHERE u.postId = :postId AND u.deletedAt IS NULL")
     public Page<Comment> findAllCommentByPostId(Integer postId, Pageable pageable);
 

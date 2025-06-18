@@ -205,4 +205,28 @@ public class PostService {
             throw new CommunityNotFoundException("Community service not available or returned error: " + e.getMessage());
         }
     }
+    public PagedResponse<PostResponse> findPostsByCommunityIds(List<Integer> communityIds, int page, int limit) {
+        if (communityIds == null || communityIds.isEmpty()) {
+            return new PagedResponse<>(List.of(), 0, 0);
+        }
+
+        try {
+            // Kiểm tra các communityIds tồn tại
+            for (Integer communityId : communityIds) {
+                ResponseEntity<CommunityResponse> communityResponse = communityClient.findById(communityId);
+                if (communityResponse == null || communityResponse.getBody() == null) {
+                    throw new CommunityNotFoundException("Community not found with ID: " + communityId);
+                }
+            }
+
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Page<Post> postPage = repository.findByCommunityIdsAndDeletedAtIsNull(communityIds, pageable);
+            List<PostResponse> responses = postPage.getContent().stream()
+                    .map(mapper::fromPost)
+                    .collect(Collectors.toList());
+            return new PagedResponse<>(responses, postPage.getTotalPages(), postPage.getTotalElements());
+        } catch (FeignException e) {
+            throw new CommunityNotFoundException("Community service not available or returned error: " + e.getMessage());
+        }
+    }
 }

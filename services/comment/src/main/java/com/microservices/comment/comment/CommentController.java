@@ -62,4 +62,19 @@ public class CommentController {
     ) {
         return ResponseEntity.ok(this.service.findAllCommentsByPostId(postId, page, limit));
     }
+
+    @PostMapping("/{comment-id}/like")
+    public ResponseEntity<Void> toggleLikeComment(
+            @PathVariable("comment-id") Integer commentId,
+            @RequestParam("userId") String userId) {
+        service.toggleLikeComment(commentId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{comment-id}/is-liked")
+    public ResponseEntity<Boolean> isCommentLiked(
+            @PathVariable("comment-id") Integer commentId,
+            @RequestParam("userId") String userId) {
+        return ResponseEntity.ok(service.isCommentLiked(commentId, userId));
+    }
 }

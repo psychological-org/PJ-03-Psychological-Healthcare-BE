@@ -6,6 +6,10 @@ import java.util.stream.Collectors;
 import com.microservices.comment.exception.PostNotFoundException;
 import com.microservices.comment.exception.UserNotFoundException;
 import com.microservices.comment.kafka.CommentProducer;
+import com.microservices.comment.like_comment.LikeComment;
+import com.microservices.comment.like_comment.LikeCommentRepository;
+import com.microservices.comment.like_comment.LikeCommentRequest;
+import com.microservices.comment.like_comment.LikeCommentService;
 import com.microservices.comment.post.PostClient;
 import com.microservices.comment.post.PostResponse;
 import com.microservices.comment.user.UserClient;
@@ -32,6 +36,8 @@ public class CommentService {
     private final UserClient userClient;
     private final PostClient postClient;
     private final CommentProducer commentProducer;
+    private final LikeCommentService likeCommentService;
+    private final LikeCommentRepository likeCommentRepository;
 
     public Integer createComment(CommentRequest request) {
         try {
@@ -149,5 +155,24 @@ public class CommentService {
                 .map(this.mapper::fromComment)
                 .collect(Collectors.toList());
         return new PagedResponse<>(commentResponses, comments.getTotalPages(), comments.getTotalElements());
+    }
+
+    public void toggleLikeComment(Integer commentId, String userId) {
+        boolean isLiked = likeCommentService.isCommentLiked(commentId, userId);
+        if (isLiked) {
+            // Tìm và xóa LikeComment
+            LikeComment likeComment = likeCommentRepository.findByCommentIdAndUserIdAndDeletedAtIsNull(commentId, userId)
+                    .orElseThrow(() -> new RuntimeException("LikeComment not found for comment " + commentId + " and user " + userId));
+            likeCommentService.deleteLikeComment(likeComment.getId());
+        } else {
+            // Tạo LikeComment
+            LikeCommentRequest request = new LikeCommentRequest(null, commentId, userId);
+            likeCommentService.createLikeComment(request);
+        }
+    }
+
+    // [THÊM MỚI] Kiểm tra trạng thái like
+    public boolean isCommentLiked(Integer commentId, String userId) {
+        return likeCommentService.isCommentLiked(commentId, userId);
     }
 }
