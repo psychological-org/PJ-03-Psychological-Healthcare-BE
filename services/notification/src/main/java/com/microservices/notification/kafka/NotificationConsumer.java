@@ -14,6 +14,8 @@ import com.microservices.notification.notification.NotificationRequest;
 import com.microservices.notification.notification.NotificationResponse;
 import com.microservices.notification.notification.NotificationService;
 import com.microservices.notification.notification.NotificationType;
+import com.microservices.notification.participant_community.ParticipantCommunityClient;
+import com.microservices.notification.participant_community.ParticipantCommunityResponse;
 import com.microservices.notification.post.PostClient;
 import com.microservices.notification.post.PostResponse;
 import com.microservices.notification.user.UserClient;
@@ -40,8 +42,7 @@ public class NotificationConsumer {
         private final EmailService emailService;
         private final NotificationService notificationService;
         private final UserNotificationService userNotificationService;
-        private final FollowClient followClient;
-        private final SimpMessagingTemplate messagingTemplate;
+        private final ParticipantCommunityClient participantCommunityResponse;
 
         private final UserClient userClient;
         private final PostClient postClient;
@@ -234,8 +235,7 @@ public class NotificationConsumer {
                                 newNotification = notificationService.findOneById(newId);
                         }
 
-                        List<FollowResponse> followResponse = followClient
-                                        .findAllFriendByUserIdNotPaginate(post.userId())
+                        List<ParticipantCommunityResponse> followResponse = participantCommunityResponse.CommunityIdNotPaginate(post.communityId())
                                         .getBody();
 
                         log.info("Save follower: {}", followResponse);
@@ -245,10 +245,8 @@ public class NotificationConsumer {
                                 return;
                         }
 
-                        for (FollowResponse follow : followResponse) {
-                                String targetUserId = follow.senderId().equals(post.userId())
-                                                ? follow.receiverId()
-                                                : follow.senderId();
+                        for (ParticipantCommunityResponse follow : followResponse) {
+                                String targetUserId = follow.userId();
 
                                 UserNotificationRequest userNotificationRequest = new UserNotificationRequest(
                                                 null,

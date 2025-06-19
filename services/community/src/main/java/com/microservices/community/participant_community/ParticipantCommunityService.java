@@ -138,4 +138,14 @@ public class ParticipantCommunityService {
         return new PagedResponse<>(appointmentResponses, appointments.getTotalPages(), appointments.getTotalElements());
     }
 
+    public List<ParticipantCommunityResponse> findByCommunityIdNotPaginate(Integer communityId) {
+        List<ParticipantCommunity> appointments = this.participantCommunityRepository.findByCommunityIdNotPaginate(communityId);
+        if (appointments.isEmpty()) {
+            throw new ParticipantCommunityNotFoundException("No collection found");
+        }
+        return appointments.stream()
+                .map(this.participantCommunityMapper::fromParticipantCommunityResponse)
+                .collect(Collectors.toList());
+    }
+
 }

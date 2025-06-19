@@ -60,6 +60,7 @@ public class AppointmentService {
                         String.format("Cannot update appointment:: No appointment found with the provided ID: %s",
                                 request.id())));
         mergeAppointment(appointment, request);
+
         appointmentProducer.sendAppointmentConfirmationEmail(mapper.fromAppointment(appointment));
         this.repository.save(appointment);
     }

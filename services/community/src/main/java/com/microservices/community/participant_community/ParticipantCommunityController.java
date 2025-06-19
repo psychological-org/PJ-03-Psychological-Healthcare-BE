@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/communities/participant_community")
 @RequiredArgsConstructor
@@ -65,5 +67,11 @@ public class ParticipantCommunityController {
     public ResponseEntity<Void> updateParticipantCommunity(@RequestBody @Valid ParticipantCommunityRequest request) {
         this.service.updateParticipantCommunity(request);
         return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("/community/users/{communityId}")
+    public ResponseEntity<List<ParticipantCommunityResponse>> getParticipantCommunityByCommunityIdNotPaginate(
+            @PathVariable("communityId") Integer communityId) {
+        return ResponseEntity.ok(this.service.findByCommunityIdNotPaginate(communityId));
     }
 }
