@@ -60,7 +60,8 @@ public class SecurityConfig {
                         "/eureka/**",
                         "/api/v1/users/**",
                         "/api/v1/notifications/**",
-                        "/api/v1/posts/**"
+                        "/api/v1/posts/**",
+                        "/api/v1/communities/participant_community/community/users/**"
                 ))
                 .authorizeExchange(ex -> ex.anyExchange().permitAll())
         // Tắt resource-server cho public chain

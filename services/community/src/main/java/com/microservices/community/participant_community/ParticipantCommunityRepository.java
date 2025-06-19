@@ -9,11 +9,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.List;
 
 @Service
 public interface ParticipantCommunityRepository extends JpaRepository<ParticipantCommunity, Integer> {
     @Query("SELECT u FROM ParticipantCommunity u WHERE u.communityId = :communityId AND u.deletedAt IS NULL")
     Page<ParticipantCommunity> findByCommunityId(Integer communityId, Pageable pageable);
+
+    @Query("SELECT u FROM ParticipantCommunity u WHERE u.communityId = :communityId AND u.deletedAt IS NULL")
+    List<ParticipantCommunity> findByCommunityIdNotPaginate(Integer communityId);
 
     // Get collection seen by user id
     @Query("SELECT u FROM ParticipantCommunity u WHERE u.userId = :userId AND u.deletedAt IS NULL")
