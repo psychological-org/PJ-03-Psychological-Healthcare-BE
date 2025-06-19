@@ -23,8 +23,11 @@ public class UserNotificationController {
     }
 
     @GetMapping("/user/{user-id}")
-    public ResponseEntity<UserNotificationResponse> findAllByUserId(@PathVariable("user-id") String userId) {
-        return ResponseEntity.ok(this.userNotificationService.findByUserId(userId));
+    public ResponseEntity<PagedResponse<UserNotificationResponse>> findAllByUserId(
+            @PathVariable("user-id") String userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return ResponseEntity.ok(this.userNotificationService.findByUserId(userId, page, limit));
     }
 
     @GetMapping("/user/{user-id}/notification/{notification-id}")

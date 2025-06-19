@@ -47,14 +47,24 @@ public class UserNotificationService {
         return userNotificationMapper.fromUserNotification(savedUserNotification).id();
     }
 
-    public UserNotificationResponse findByUserId(String userId) {
-        UserNotification userNotification = userNotificationRepository.findByUserId(userId);
-        if (userNotification == null) {
+    public PagedResponse<UserNotificationResponse> findByUserId(String userId, int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<UserNotification> userNotificationPage = userNotificationRepository.findByUserId(userId, pageable);
+
+        if (userNotificationPage.isEmpty()) {
             throw new UserNotificationNotFoundException(
-                    String.format("User has never received a notification from the system."));
+                    String.format("No notifications found for user ID: %s", userId));
         }
-        return userNotificationMapper.fromUserNotification(userNotification);
+
+        List<UserNotificationResponse> userNotificationResponses = userNotificationPage.getContent()
+                .stream()
+                .map(userNotificationMapper::fromUserNotification)
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(userNotificationResponses, userNotificationPage.getTotalPages(),
+                userNotificationPage.getTotalElements());
     }
+
 
     public UserNotificationResponse findByUserIdAndNotificationId(String userId, String notificationId) {
         UserNotification userNotification = userNotificationRepository.findByUserIdAndNotificationId(userId,

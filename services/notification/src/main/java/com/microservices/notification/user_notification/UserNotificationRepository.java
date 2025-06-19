@@ -10,7 +10,7 @@ import java.util.List;
 public interface UserNotificationRepository extends MongoRepository<UserNotification, String> {
     // Find all user notifications by user id
     @Query("{ 'deletedAt': null, 'userId': ?0 }")
-    UserNotification findByUserId(String userId);
+    Page<UserNotification> findByUserId(String userId, Pageable pageable);
 
     // Find all user notifications by user id and notification id
     @Query("{ 'deletedAt': null, 'userId': ?0, 'notificationId': ?1 }")
