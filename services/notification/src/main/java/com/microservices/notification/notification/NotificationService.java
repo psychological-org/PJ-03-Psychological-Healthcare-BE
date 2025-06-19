@@ -64,15 +64,15 @@ public class NotificationService {
         }
     }
 
-    // Phiên bản cho thông báo lịch hẹn
-    public String sendPushNotificationByFirebase(String token, String title, String body, Integer appointmentId) {
-        try {
-            String response = fcmPushService.sendToToken(token, title, body, appointmentId);
-            return response;
-        } catch (FirebaseMessagingException e) {
-            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
-        }
-    }
+//    // Phiên bản cho thông báo lịch hẹn
+//    public String sendPushNotificationByFirebase(String token, String title, String body, Integer appointmentId) {
+//        try {
+//            String response = fcmPushService.sendToToken(token, title, body, appointmentId);
+//            return response;
+//        } catch (FirebaseMessagingException e) {
+//            throw new RuntimeException("Failed to send notification: " + e.getMessage(), e);
+//        }
+//    }
 
     public String sendPushNotificationByFirebase(String token, String title, String body) {
         try {
