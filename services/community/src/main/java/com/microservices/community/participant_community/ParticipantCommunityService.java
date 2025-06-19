@@ -143,9 +143,11 @@ public class ParticipantCommunityService {
         if (appointments.isEmpty()) {
             throw new ParticipantCommunityNotFoundException("No collection found");
         }
+        // Sử dụng lambda để truyền userClient vào phương thức từ mapper
         return appointments.stream()
-                .map(this.participantCommunityMapper::fromParticipantCommunityResponse)
+                .map(participantCommunity -> this.participantCommunityMapper.fromParticipantCommunityResponse(participantCommunity, userClient))
                 .collect(Collectors.toList());
     }
+
 
 }

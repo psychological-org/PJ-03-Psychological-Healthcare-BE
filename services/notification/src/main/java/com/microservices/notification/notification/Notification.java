@@ -35,4 +35,8 @@ public class Notification {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
+
+    public String toString() {
+        return "Notification: " + id;
+    }
 }

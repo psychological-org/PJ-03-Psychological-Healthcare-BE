@@ -17,4 +17,8 @@ public class UserNotification {
     private String notificationId;
     private String content;
     private boolean isRead;
+
+    public String toString() {
+        return "UserNotification: " + id;
+    }
 }

@@ -23,6 +23,7 @@ import com.microservices.notification.post.PostClient;
 import com.microservices.notification.post.PostResponse;
 import com.microservices.notification.user.UserClient;
 import com.microservices.notification.user.UserResponse;
+import com.microservices.notification.user_notification.UserNotification;
 import com.microservices.notification.user_notification.UserNotificationRequest;
 import com.microservices.notification.user_notification.UserNotificationService;
 import feign.FeignException;
@@ -65,7 +66,7 @@ public class NotificationConsumer {
                         UserResponse userResponse;
 
                         try {
-                                userResponse = userClient.findById("682a976ae5cb142bd93c585e").getBody();
+                                userResponse = userClient.findById(commentNotification.userId()).getBody();
                                 log.info("User found: {}", userResponse);
                         } catch (FeignException e) {
                                 log.error("User not found for ID: {}", e);
@@ -76,6 +77,7 @@ public class NotificationConsumer {
                         try {
                                 // Thử lấy template, nếu không tìm thấy thì ném NotificationNotFoundException
                                 notificationResponse = notificationService.findNotificationByName(templateName);
+                                System.out.println("Notification response: " + notificationResponse.toString());
                         } catch (NotificationNotFoundException notFound) {
                                 NotificationRequest newTemplate = new NotificationRequest(
                                         null,
@@ -98,15 +100,16 @@ public class NotificationConsumer {
 
                         log.info("Created new notification template: {}", notificationResponse);
 
-                        String userNotificationContent = userResponse.fullName()
-                                        + notificationResponse.content();
+//                        String userNotificationContent = userResponse.fullName()
+//                                        + notificationResponse.content();
+                        String userNotificationContent = notificationResponse.content();
                         // Lấy id user của post
                         UserNotificationRequest userNotificationRequest = new UserNotificationRequest(null,
                                         postResponse.userId(), notificationResponse.id(), userNotificationContent,
                                         false);
-                        userNotificationService.createUserNotification(userNotificationRequest);
+                        String userNotification = userNotificationService.createUserNotification(userNotificationRequest);
 
-                        log.info("Save comment notification: {}", notificationResponse);
+                        log.info("Save comment notification: {}", userNotification);
 
                         // send push notification to client by fcm
                         List<FcmTokenResponse> fcmTokenResponses = fcmTokenClient
@@ -369,7 +372,7 @@ public class NotificationConsumer {
                                 NotificationRequest newTemplate = new NotificationRequest(
                                         null,
                                         templateName,
-                                        NotificationType.FOLLOW_NOTIFICATION
+                                        NotificationType.POST_NOTIFICATION
                                 );
                                 String newId = notificationService.createNotification(newTemplate);
                                 newNotification = notificationService.findOneById(newId);
@@ -384,6 +387,8 @@ public class NotificationConsumer {
                                 log.info("No followers found for user: {}", post.userId());
                                 return;
                         }
+
+                        System.out.println("List of attendances: " + followResponse);
 
                         for (ParticipantCommunityResponse follow : followResponse) {
                                 String targetUserId = follow.userId();

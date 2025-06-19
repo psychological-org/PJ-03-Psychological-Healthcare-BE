@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-@FeignClient(name = "post-service", url = "${application.config.participant-url}")
+@FeignClient(name = "community-service", url = "${application.config.attendance-url}")
 public interface ParticipantCommunityClient {
     @GetMapping("/community/users/{communityId}")
     public ResponseEntity<List<ParticipantCommunityResponse>> CommunityIdNotPaginate(
