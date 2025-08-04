@@ -2,6 +2,8 @@ package com.microservices.collection.handler;
 
 import java.util.HashMap;
 
+import com.microservices.collection.exception.TopicNotFoundException;
+import com.microservices.collection.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -17,6 +19,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CollectionNotFoundException.class)
     public ResponseEntity<String> handle(CollectionNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
+    @ExceptionHandler(TopicNotFoundException.class)
+    public ResponseEntity<String> handle(TopicNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handle(UserNotFoundException exp) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(exp.getMsg());

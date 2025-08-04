@@ -1,14 +1,21 @@
 package com.microservices.post.community;
 
-import java.util.Optional;
-
+import com.microservices.post.config.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "topic-service", url = "${application.config.topic-url}")
+@FeignClient(name = "community-service", url="${application.config.community-url}", configuration = FeignClientConfig.class)
 public interface CommunityClient {
-
-    @GetMapping("/{topic-id}")
-    Optional<CommunityResponse> findCommunityById(@PathVariable("topic-id") String topicId);
+    @GetMapping("/{community-id}")
+    ResponseEntity<CommunityResponse> findById(@PathVariable("community-id") Integer communityId);
 }
+
+
+
+//@GetMapping("/{community-id}")
+//public ResponseEntity<CommunityResponse> findById(
+//        @PathVariable("community-id") Integer userId) {
+//    return ResponseEntity.ok(this.service.findById(userId));
+//}

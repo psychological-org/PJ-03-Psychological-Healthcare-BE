@@ -15,6 +15,7 @@ public class CommentMapper {
                 .imageUrl(request.imageUrl())
                 .userId(request.userId())
                 .postId(request.postId())
+                .reactCount(request.reactCount())
                 .build();
     }
 
@@ -26,9 +27,10 @@ public class CommentMapper {
                 comment.getId(),
                 comment.getContent(),
                 comment.getImageUrl(),
-                comment.getReactCount(),
                 comment.getUserId(),
-                comment.getPostId());
+                comment.getPostId(),
+                comment.getReactCount(),
+                comment.getCreatedAt());
     }
 
 }

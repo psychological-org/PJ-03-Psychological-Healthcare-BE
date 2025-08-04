@@ -2,6 +2,7 @@ package com.microservices.user.handler;
 
 import java.util.HashMap;
 
+import com.microservices.user.exception.FcmTokenNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,6 +17,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handle(UserNotFoundException exp) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(exp.getMsg());
+    }
+
+    @ExceptionHandler(FcmTokenNotFoundException.class)
+    public ResponseEntity<String> handle(FcmTokenNotFoundException exp) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(exp.getMsg());

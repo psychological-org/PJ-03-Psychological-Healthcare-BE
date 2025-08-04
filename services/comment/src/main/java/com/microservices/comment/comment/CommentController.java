@@ -1,16 +1,8 @@
 package com.microservices.comment.comment;
 
-import java.util.List;
-
+import com.microservices.comment.utils.PagedResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +27,12 @@ public class CommentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CommentResponse>> findAll() {
-        return ResponseEntity.ok(this.service.findAllComments());
+    public
+    ResponseEntity<PagedResponse<CommentResponse>> findAll(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(this.service.findAllComments(page, limit));
     }
 
     @GetMapping("/exists/{comment-id}")
@@ -56,5 +52,29 @@ public class CommentController {
             @PathVariable("comment-id") Integer userId) {
         this.service.deleteComment(userId);
         return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("/post/{post-id}")
+    public ResponseEntity<PagedResponse<CommentResponse>> findByPostId(
+            @PathVariable("post-id") Integer postId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(this.service.findAllCommentsByPostId(postId, page, limit));
+    }
+
+    @PostMapping("/{comment-id}/like")
+    public ResponseEntity<Void> toggleLikeComment(
+            @PathVariable("comment-id") Integer commentId,
+            @RequestParam("userId") String userId) {
+        service.toggleLikeComment(commentId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{comment-id}/is-liked")
+    public ResponseEntity<Boolean> isCommentLiked(
+            @PathVariable("comment-id") Integer commentId,
+            @RequestParam("userId") String userId) {
+        return ResponseEntity.ok(service.isCommentLiked(commentId, userId));
     }
 }

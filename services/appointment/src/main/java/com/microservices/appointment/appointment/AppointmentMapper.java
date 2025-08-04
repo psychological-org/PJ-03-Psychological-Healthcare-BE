@@ -14,8 +14,11 @@ public class AppointmentMapper {
                 .status(request.status())
                 .appointmentDate(request.appointmentDate())
                 .appointmentTime(request.appointmentTime())
+                .rating(request.rating())
+                .review(request.review())
                 .patientId(request.patientId())
                 .doctorId(request.doctorId())
+                .note(request.note())
                 .build();
     }
 
@@ -28,8 +31,11 @@ public class AppointmentMapper {
                 appointment.getStatus(),
                 appointment.getAppointmentDate(),
                 appointment.getAppointmentTime(),
+                appointment.getRating(),
+                appointment.getReview(),
                 appointment.getPatientId(),
-                appointment.getDoctorId());
+                appointment.getDoctorId(),
+                appointment.getNote());
 
     }
 

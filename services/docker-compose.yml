@@ -1,0 +1,186 @@
+services:
+  config-server:
+    container_name: config-server
+    build:
+      context: ./config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+
+  discovery-service:
+    container_name: discovery-service
+    build:
+      context: ./discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+
+  appointment-service:
+    build:
+      context: ./appointment
+    container_name: appointment-service
+    ports:
+      - "8080:8080"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  attendance-service:
+    build:
+      context: ./attendance
+    container_name: attendance-service
+    ports:
+      - "8070:8070"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  collection-service:
+    build:
+      context: ./collection
+    container_name: collection-service
+    ports:
+      - "8021:8020"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  comment-service:
+    build:
+      context: ./comment
+    container_name: comment-service
+    ports:
+      - "8060:8060"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  community-service:
+    build:
+      context: ./community
+    container_name: community-service
+    ports:
+      - "8040:8040"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  follow-service:
+    build:
+      context: ./follow
+    container_name: follow-service
+    ports:
+      - "8090:8090"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  gateway-service:
+    build:
+      context: ./gateway
+    container_name: gateway-service
+    ports:
+      - "8222:8222"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+    environment:
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-services/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/micro-services
+
+  message-service:
+    build:
+      context: ./message
+    container_name: message-service
+    ports:
+      - "8110:8110"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  notification-service:
+    build:
+      context: ./notification
+    container_name: notification-service
+    ports:
+      - "8000:8000"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  post-service:
+    build:
+      context: ./post
+    container_name: post-service
+    ports:
+      - "8050:8050"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  topic-service:
+    build:
+      context: ./topic
+    container_name: topic-service
+    ports:
+      - "8010:8010"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  user-service:
+    build:
+      context: ./user
+    container_name: user-service
+    ports:
+      - "8030:8030"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+
+  recommended-service:
+    build:
+      context: ./recommended
+    container_name: recommended-service
+    ports:
+      - "8120:8120"
+    networks:
+      - pj-03-psychological-healthcare-be_microservices-net
+    depends_on:
+      - config-server
+      - discovery-service
+    environment:
+    - HF_TOKEN=${HF_TOKEN}
+    - GEMINI_API_KEY=${GEMINI_API_KEY}
+
+networks:
+  pj-03-psychological-healthcare-be_microservices-net:
+    external: true

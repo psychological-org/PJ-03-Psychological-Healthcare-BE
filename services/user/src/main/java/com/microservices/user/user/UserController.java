@@ -1,19 +1,18 @@
 package com.microservices.user.user;
 
-import java.util.List;
-
+import com.microservices.user.exception.UserNotFoundException;
+import com.microservices.user.utils.PagedResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -22,9 +21,12 @@ public class UserController {
     private final UserService service;
 
     @PostMapping
-    public ResponseEntity<String> createUser(
+    public ResponseEntity<Map<String, String>> createUser(
             @RequestBody @Valid UserRequest request) {
-        return ResponseEntity.ok(this.service.createUser(request));
+        String userId = this.service.createUser(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("id", userId);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping
@@ -35,20 +37,30 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> findAll() {
-        return ResponseEntity.ok(this.service.findAllUsers());
-    }
-
-    @GetMapping("/exists/{user-id}")
-    public ResponseEntity<Boolean> existsById(
-            @PathVariable("user-id") String userId) {
-        return ResponseEntity.ok(this.service.existsById(userId));
+    public ResponseEntity<PagedResponse<UserResponse>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<UserResponse> p = service.findAllUsers(page, size);
+        return ResponseEntity.ok(
+                new PagedResponse<>(p.getContent(), p.getTotalPages(), p.getTotalElements()));
     }
 
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponse> findById(
             @PathVariable("user-id") String userId) {
-        return ResponseEntity.ok(this.service.findById(userId));
+        System.out.println("User ID: " + userId);
+        try {
+            User user = this.service.findRawByUserId(userId);
+            return ResponseEntity.ok(this.service.findById(user.getKeycloakId()));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.ok(this.service.findById(userId));
+        }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal Jwt jwt) {
+        String keycloakId = jwt.getClaim("sub");
+        return ResponseEntity.ok(this.service.findById(keycloakId));
     }
 
     @DeleteMapping("/{user-id}")

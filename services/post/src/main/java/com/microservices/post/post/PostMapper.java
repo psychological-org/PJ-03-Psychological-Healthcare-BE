@@ -12,7 +12,10 @@ public class PostMapper {
         return Post.builder()
                 .id(request.id())
                 .content(request.content())
+                .visibility(request.visibility())
+                .imageUrl(request.imageUrl())
                 .communityId(request.communityId())
+                .reactCount(request.reactCount())
                 .userId(request.userId())
                 .build();
     }
@@ -28,7 +31,8 @@ public class PostMapper {
                 post.getVisibility(),
                 post.getReactCount(),
                 post.getCommunityId(),
-                post.getUserId());
+                post.getUserId(),
+                post.getCreatedAt());
 
     }
 
