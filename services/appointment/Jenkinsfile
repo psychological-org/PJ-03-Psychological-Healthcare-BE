@@ -1,0 +1,15 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Test Pipeline') {
+            steps {
+                echo "🚀 Hello from Jenkins CI/CD Pipeline!"
+                echo "📅 Build Number: ${BUILD_NUMBER}"
+                echo "🌿 Branch: ${GIT_BRANCH}"
+                echo "💾 Commit: ${GIT_COMMIT}"
+                echo "✅ Appointment Service Pipeline is working!"
+            }
+        }
+    }
+} 
