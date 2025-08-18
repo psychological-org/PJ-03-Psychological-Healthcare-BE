@@ -22,3 +22,14 @@ output "jenkins_instance_id" {
   description = "ID of the Jenkins EC2 instance"
   value       = aws_instance.jenkins.id
 }
+
+output "rds_endpoint" {
+  description = "RDS instance endpoint"
+  value       = module.rds.db_endpoint
+  sensitive   = true
+}
+
+output "rds_port" {
+  description = "RDS instance port"
+  value       = module.rds.db_port
+}

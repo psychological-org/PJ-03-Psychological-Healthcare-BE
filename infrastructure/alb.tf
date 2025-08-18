@@ -183,7 +183,7 @@ resource "aws_lb_target_group" "keycloak" {
     timeout = 5
     interval = 30
     path = "/health"
-    matcher = "200, 404"
+    matcher = "200"
     port = "traffic-port"
     protocol = "HTTP"
   }
@@ -243,44 +243,50 @@ resource "aws_lb_target_group" "gateway" {
 
 }
 
-
-# Services ALB Listeners - Keycloak
-resource "aws_lb_listener" "keycloak_https" {
+resource "aws_lb_listener" "services_https" {
   load_balancer_arn = aws_lb.services.arn
   port = 443
   protocol = "HTTPS"
-  certificate_arn = "arn:aws:acm:ap-southeast-1:381491880852:certificate/41680820-41fa-4eb3-a7c0-32efb32a3a9f"
+  certificate_arn = "arn:aws:acm:ap-southeast-1:381491880852:certificate/26a08634-907b-4d11-a9d2-f0658fa5ef47"
 
   default_action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Service Not Found"
+      status_code = "404"
+    }
+  }
+}
+
+
+# Host-based routing rules
+resource "aws_lb_listener_rule" "keycloak_rule" {
+  listener_arn = aws_lb_listener.services_https.arn
+  priority = 100
+  action {
     type = "forward"
     target_group_arn = aws_lb_target_group.keycloak.arn
   }
-}
-
-
-# Services ALB Listeners - Zipkin
-resource "aws_lb_listener" "zipkin_https" {
-  load_balancer_arn = aws_lb.services.arn
-  port = 443
-  protocol = "HTTPS"
-  certificate_arn = "arn:aws:acm:ap-southeast-1:381491880852:certificate/41680820-41fa-4eb3-a7c0-32efb32a3a9f"
-
-  default_action {
-    type = "forward"
-    target_group_arn = aws_lb_target_group.zipkin.arn
+  condition {
+    host_header {
+      values = ["keycloak.ngxquang.site"]
+    }
   }
 }
 
-# Services ALB Listeners - Gateway
-resource "aws_lb_listener" "api_https" {
-  load_balancer_arn = aws_lb.services.arn
-  port = 443
-  protocol = "HTTPS"
-  certificate_arn = "arn:aws:acm:ap-southeast-1:381491880852:certificate/41680820-41fa-4eb3-a7c0-32efb32a3a9f"
 
-  default_action {
+resource "aws_lb_listener_rule" "gateway_rule" {
+  listener_arn = aws_lb_listener.services_https.arn
+  priority = 200
+  action {
     type = "forward"
     target_group_arn = aws_lb_target_group.gateway.arn
+  }
+  condition {
+    host_header {
+      values = ["psychology.ngxquang.site"]
+    }
   }
 }
 

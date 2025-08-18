@@ -21,7 +21,7 @@ resource "aws_security_group" "jenkins" {
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
+    security_groups = [aws_security_group.alb_jenkins.id]
   }
   egress {
     from_port   = 0

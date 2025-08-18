@@ -27,3 +27,30 @@ variable "azs" {
   type        = list(string)
   default     = ["ap-southeast-1a", "ap-southeast-1b"]
 }
+
+variable "db_username" {
+  description = "Database master username"
+  type        = string
+  default     = "root"
+}
+
+variable "db_password" {
+  description = "Database master password"
+  type        = string
+  default     = "Admin@123"
+  sensitive   = true
+}
+
+# MongoDB credentials
+variable "mongodb_username" {
+  description = "MongoDB username"
+  type        = string
+  default     = "root"
+}
+
+variable "mongodb_password" {
+  description = "MongoDB password"
+  type        = string
+  default     = "Admin@123"
+  sensitive   = true
+}
