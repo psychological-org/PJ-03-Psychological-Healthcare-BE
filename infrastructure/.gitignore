@@ -1,0 +1,13 @@
+# Terraform state files
+terraform.tfstate
+terraform.tfstate.backup
+
+# Terraform variables file
+terraform.tfvars
+
+# Terraform directories
+.terraform/
+.terraform.lock.hcl
+
+# Sensitive files
+jenkins-key.pem
